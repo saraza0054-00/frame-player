@@ -1,0 +1,1079 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>FRAME — Video Studio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#090b10">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+
+<!-- HLS.js for m3u8 support -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.7/hls.min.js"></script>
+
+<style>
+/* ── TOKENS ────────────────────────────────────────────── */
+/* Layout: two hash-routed views — library + watch — single page */
+:root {
+  --bg:      #090b10;
+  --panel:   #10141d;
+  --panel2:  #141a25;
+  --line:    rgba(255,255,255,.085);
+  --text:    #f3f5fa;
+  --muted:   #8b94a6;
+  --accent:  #b8ff65;
+  --accent2: #d4ff9c;
+  --danger:  #ff7777;
+  --radius:  14px;
+  color-scheme: dark;
+}
+/* light override via data-theme */
+:root[data-theme="light"] {
+  --bg:      #f0f4ed;
+  --panel:   #ffffff;
+  --panel2:  #f5f7f2;
+  --line:    rgba(20,30,20,.12);
+  --text:    #151a14;
+  --muted:   #667064;
+  --accent:  #3d8a00;
+  --accent2: #5db800;
+  --danger:  #cc2222;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg:      #f0f4ed;
+    --panel:   #ffffff;
+    --panel2:  #f5f7f2;
+    --line:    rgba(20,30,20,.12);
+    --text:    #151a14;
+    --muted:   #667064;
+    --accent:  #3d8a00;
+    --accent2: #5db800;
+    --danger:  #cc2222;
+    color-scheme: light;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  min-height: 100%;
+  overflow-x: hidden;
+  padding-left: max(0px, env(safe-area-inset-left, 0px));
+  padding-right: max(0px, env(safe-area-inset-right, 0px));
+}
+
+/* grid overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: .12;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 54px 54px;
+  mask-image: linear-gradient(to bottom, black, transparent 70%);
+  z-index: 0;
+}
+:root[data-theme="light"] body::before,
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) body::before { opacity: .04; } }
+
+.ambient {
+  position: fixed;
+  width: 520px; height: 520px;
+  border-radius: 50%;
+  filter: blur(130px);
+  opacity: .11;
+  pointer-events: none;
+  z-index: 0;
+}
+.ambient-one { background: #8cff42; top: -350px; left: 15%; }
+.ambient-two { background: #436dff; right: -400px; top: 35%; }
+
+/* ── TOPBAR ── */
+.topbar {
+  height: 68px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 max(16px, env(safe-area-inset-left, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
+  padding-left: max(32px, calc(env(safe-area-inset-left, 0px) + 16px));
+  padding-right: max(32px, calc(env(safe-area-inset-right, 0px) + 16px));
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 10;
+  background: rgba(9,11,16,.80);
+  backdrop-filter: blur(18px);
+}
+:root[data-theme="light"] .topbar { background: rgba(240,244,237,.85); }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .topbar { background: rgba(240,244,237,.85); }
+}
+
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--text);
+  font: 700 16px 'Space Grotesk'; letter-spacing: 2px;
+  cursor: pointer;
+}
+.brand-mark {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: var(--accent); color: #11170b;
+  display: grid; place-items: center;
+  font-size: 16px; font-weight: 700;
+}
+.brand-dot { color: var(--accent); }
+
+.topbar-right { display: flex; align-items: center; gap: 14px; }
+
+.badge {
+  font-size: 9px; letter-spacing: 1.4px; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 30px; padding: 7px 11px;
+}
+.badge i {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); margin-right: 6px;
+  box-shadow: 0 0 10px var(--accent);
+}
+
+.icon-btn {
+  border: 1px solid var(--line); background: var(--panel);
+  color: var(--text); width: 34px; height: 34px;
+  border-radius: 10px; cursor: pointer; font-size: 14px;
+  display: grid; place-items: center;
+  transition: background .15s;
+}
+.icon-btn:hover { background: var(--panel2); }
+
+.back-btn {
+  font-size: 9px; letter-spacing: 1px;
+  color: var(--muted); background: none;
+  border: none; cursor: pointer; padding: 0;
+  transition: color .15s;
+}
+.back-btn:hover { color: var(--accent); }
+
+/* ── VIEW ROUTING ── */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ── LIBRARY VIEW ── */
+.shell {
+  width: min(1120px, 88vw);
+  margin: auto;
+  position: relative; z-index: 1;
+  padding-block: 0 60px;
+}
+
+.hero { padding: 72px 0 56px; }
+
+.eyebrow {
+  font-size: 9px; letter-spacing: 2.1px; color: var(--muted);
+  font-weight: 700; display: flex; align-items: center; gap: 10px;
+}
+.eyebrow-line { width: 22px; height: 1px; background: var(--accent); }
+
+.hero h1 {
+  font: 600 clamp(42px,6vw,72px)/1.04 'Space Grotesk';
+  letter-spacing: -3px; margin: 20px 0 16px;
+  text-wrap: balance;
+}
+.hero h1 em { color: var(--accent); font-style: normal; }
+
+.hero-copy {
+  color: var(--muted); max-width: 500px;
+  font-size: 14px; line-height: 1.8;
+}
+
+.hero-stats {
+  display: flex; gap: 52px; margin-top: 36px;
+  flex-wrap: wrap;
+}
+.hero-stats div { display: flex; flex-direction: column; gap: 4px; }
+.hero-stats strong {
+  font: 600 22px 'Space Grotesk';
+  font-variant-numeric: tabular-nums;
+}
+.hero-stats span { font-size: 8px; letter-spacing: 1.5px; color: var(--muted); }
+
+.section { padding: 32px 0 52px; border-top: 1px solid var(--line); }
+
+.sec-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 20px; gap: 16px;
+}
+.sec-head h2 {
+  font: 600 24px 'Space Grotesk'; letter-spacing: -.6px; margin: 8px 0 0;
+}
+.step-label { font-size: 9px; letter-spacing: 1.5px; color: var(--muted); flex-shrink: 0; }
+.step-label span { color: #4e5665; }
+
+/* ── EDITOR CARD ── */
+.editor-card {
+  background: linear-gradient(145deg, rgba(20,26,37,.96), rgba(13,17,25,.96));
+  border: 1px solid var(--line); border-radius: 18px;
+  padding: 26px;
+  box-shadow: 0 24px 80px rgba(0,0,0,.18);
+}
+:root[data-theme="light"] .editor-card { background: #fff; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .editor-card { background: #fff; }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.field {
+  display: flex; flex-direction: column; gap: 8px; min-width: 0;
+}
+.field.full { grid-column: 1 / -1; }
+
+.field > .label {
+  font-size: 9px; font-weight: 700; letter-spacing: 1.3px; color: var(--muted);
+}
+.field .label b { color: var(--accent); }
+.field small { font-size: 9px; color: var(--muted); letter-spacing: .5px; }
+
+.field input, .field textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 13px 14px;
+  outline: none;
+  font: 12px 'DM Sans';
+  transition: border-color .2s, box-shadow .2s;
+}
+.field textarea {
+  resize: vertical; min-height: 90px; line-height: 1.6;
+}
+.field input:focus, .field textarea:focus {
+  border-color: rgba(184,255,101,.5);
+  box-shadow: 0 0 0 3px rgba(184,255,101,.06);
+}
+.field input::placeholder, .field textarea::placeholder { color: #596273; }
+
+.form-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  border-top: 1px solid var(--line); margin-top: 22px; padding-top: 18px;
+  gap: 16px; flex-wrap: wrap;
+}
+.req-note { font-size: 10px; color: var(--muted); }
+.req-note b { color: var(--accent); }
+
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.btn {
+  border: none; border-radius: 9px;
+  padding: 11px 16px;
+  font: 600 11px 'DM Sans'; cursor: pointer;
+  transition: transform .18s, opacity .18s;
+  white-space: nowrap;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: scale(.97); }
+
+.btn-primary {
+  background: var(--accent); color: #12180c;
+  box-shadow: 0 7px 25px rgba(184,255,101,.12);
+}
+.btn-ghost {
+  background: var(--panel2); color: var(--muted);
+  border: 1px solid var(--line);
+}
+.btn-ghost:hover { color: var(--text); }
+
+/* ── LIBRARY ── */
+.lib-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; gap: 16px; flex-wrap: wrap;
+}
+.lib-left h2 { font: 600 24px 'Space Grotesk'; letter-spacing: -.6px; margin: 8px 0 0; }
+
+.count-pill {
+  font: 500 11px 'DM Sans'; color: var(--accent);
+  background: rgba(184,255,101,.1);
+  border: 1px solid rgba(184,255,101,.15);
+  padding: 4px 8px; border-radius: 20px;
+  vertical-align: middle; margin-left: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lib-tools { display: flex; align-items: center; gap: 14px; }
+
+.search-box {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 9px; padding-left: 11px; color: var(--muted);
+  transition: border-color .2s;
+}
+.search-box:focus-within { border-color: rgba(184,255,101,.4); }
+.search-box input {
+  border: none; background: transparent; color: var(--text);
+  width: 150px; padding: 9px 8px;
+  font: 12px 'DM Sans'; outline: none;
+}
+.search-box input::placeholder { color: var(--muted); }
+
+.text-btn {
+  border: none; background: none;
+  color: var(--muted); font: 10px 'DM Sans';
+  cursor: pointer; transition: color .15s;
+}
+.text-btn:hover { color: var(--danger); }
+
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.video-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .22s, border-color .22s;
+}
+.video-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(184,255,101,.3);
+}
+
+.thumb {
+  height: 160px;
+  background: var(--panel2);
+  position: relative; overflow: hidden;
+}
+.thumb img {
+  width: 100%; height: 100%; object-fit: cover;
+  display: block; transition: transform .4s;
+}
+.video-card:hover .thumb img { transform: scale(1.04); }
+.thumb-placeholder {
+  height: 100%; display: grid; place-items: center;
+  color: var(--muted); font-size: 32px;
+  background: radial-gradient(circle at 50% 50%, #242d3c, #111722);
+}
+:root[data-theme="light"] .thumb-placeholder,
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .thumb-placeholder { background: radial-gradient(circle at 50%, #e6ede0, #cdd7c5); }
+}
+.play-chip {
+  position: absolute; right: 10px; bottom: 10px;
+  width: 32px; height: 32px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--accent); color: #10150b; font-size: 11px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.5);
+}
+
+.card-body { padding: 14px; }
+.card-title {
+  font: 600 14px 'Space Grotesk';
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin: 0 0 6px;
+}
+.card-desc {
+  font-size: 10px; line-height: 1.6; color: var(--muted);
+  height: 32px; overflow: hidden; margin: 0 0 10px;
+}
+.tag-row { display: flex; gap: 5px; flex-wrap: wrap; }
+.tag {
+  font-size: 8px; color: var(--accent2);
+  background: rgba(184,255,101,.08);
+  border: 1px solid rgba(184,255,101,.12);
+  border-radius: 20px; padding: 4px 7px;
+}
+:root[data-theme="light"] .tag, @media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .tag { color: #3d6e00; background: rgba(61,138,0,.08); border-color: rgba(61,138,0,.15); }
+}
+
+.card-bottom {
+  display: flex; align-items: center; justify-content: space-between;
+  border-top: 1px solid var(--line);
+  padding-top: 10px; margin-top: 12px;
+}
+.card-date { font-size: 9px; color: var(--muted); }
+.card-acts { display: flex; gap: 6px; }
+.small-btn {
+  border: 1px solid var(--line); background: var(--panel2);
+  color: var(--muted); border-radius: 7px;
+  padding: 5px 9px; font-size: 9px; cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+.small-btn:hover { color: var(--accent); border-color: rgba(184,255,101,.3); }
+.small-btn.del:hover { color: var(--danger); border-color: rgba(255,119,119,.3); }
+
+.empty-state {
+  text-align: center; padding: 60px 20px; color: var(--muted);
+}
+.empty-icon { font-size: 28px; margin-bottom: 14px; }
+.empty-state h3 { font: 600 17px 'Space Grotesk'; color: var(--text); margin-bottom: 6px; }
+.empty-state p { font-size: 11px; }
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 22px 0 28px;
+  display: flex; justify-content: space-between;
+  color: var(--muted); font-size: 8px; letter-spacing: 1.3px;
+}
+
+/* ── WATCH VIEW ── */
+.watch-shell {
+  width: min(1100px, 88vw);
+  margin: 40px auto 80px;
+  position: relative; z-index: 1;
+}
+
+.watch-topline {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px;
+}
+
+.player-wrap {
+  position: relative; width: 100%; aspect-ratio: 16/9;
+  background: #020305;
+  border: 1px solid var(--line); border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 28px 100px rgba(0,0,0,.5);
+}
+.player-wrap video {
+  width: 100%; height: 100%; display: block;
+  background: #020305; object-fit: contain;
+}
+
+.player-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px; background: #090d14;
+  color: var(--muted); text-align: center;
+  padding: 16px;
+  transition: opacity .25s;
+}
+.player-overlay.hidden { display: none; }
+.overlay-icon { font-size: 26px; color: var(--accent); margin-bottom: 4px; }
+.overlay-title { font: 600 16px 'Space Grotesk'; color: var(--text); }
+.overlay-sub { font-size: 11px; color: var(--muted); max-width: 360px; }
+.overlay-method {
+  font: 600 10px 'DM Sans'; letter-spacing: 1px;
+  color: var(--accent); background: rgba(184,255,101,.1);
+  border: 1px solid rgba(184,255,101,.2);
+  border-radius: 20px; padding: 5px 12px; margin-top: 8px;
+}
+
+.loading-ring {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 3px solid rgba(184,255,101,.15);
+  border-top-color: var(--accent);
+  animation: spin .8s linear infinite;
+  margin-bottom: 4px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.watch-content {
+  display: grid; grid-template-columns: 1fr 290px;
+  gap: 40px; padding: 28px 0 0;
+}
+.watch-main h1 {
+  font: 600 clamp(24px,4vw,36px)/1.1 'Space Grotesk';
+  letter-spacing: -1.2px; margin: 14px 0 10px;
+  text-wrap: balance;
+}
+.watch-desc { font-size: 13px; line-height: 1.8; color: var(--muted); white-space: pre-wrap; }
+.watch-meta {
+  display: flex; gap: 18px; margin-top: 22px;
+  color: var(--muted); font-size: 9px; letter-spacing: 1px;
+}
+.watch-meta i {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); margin-right: 6px;
+  box-shadow: 0 0 10px var(--accent);
+}
+
+.source-card {
+  background: var(--panel);
+  border: 1px solid var(--line); border-radius: 13px;
+  padding: 18px; height: max-content;
+}
+.src-eyebrow {
+  font-size: 8px; letter-spacing: 1.3px; color: var(--muted);
+  margin-bottom: 16px; font-weight: 700;
+}
+.src-label {
+  display: block; font-size: 8px; letter-spacing: 1.2px;
+  color: var(--muted); margin: 18px 0 7px;
+}
+.src-url {
+  font-size: 10px; line-height: 1.6; color: var(--text);
+  word-break: break-all; max-height: 80px;
+  overflow: auto;
+  background: var(--bg); border-radius: 8px; padding: 8px 10px;
+  border: 1px solid var(--line);
+}
+.method-row {
+  display: flex; align-items: center; gap: 8px;
+  margin: 12px 0 0;
+}
+.method-chip {
+  font-size: 9px; letter-spacing: .8px;
+  padding: 4px 8px; border-radius: 6px;
+  background: var(--bg); border: 1px solid var(--line);
+  color: var(--muted); transition: all .2s;
+}
+.method-chip.ok { border-color: rgba(184,255,101,.4); color: var(--accent); }
+.method-chip.err { border-color: rgba(255,119,119,.3); color: var(--danger); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translate(-50%, 20px);
+  opacity: 0; pointer-events: none;
+  background: var(--accent2); color: #12180c;
+  padding: 11px 18px; border-radius: 9px;
+  font: 700 11px 'DM Sans'; z-index: 20;
+  transition: .25s; white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 760px) {
+  .shell, .watch-shell { width: 92vw; }
+  .hero { padding: 52px 0 40px; }
+  .hero-stats { gap: 22px; }
+  .hero-stats strong { font-size: 19px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .field.full { grid-column: auto; }
+  .video-grid { grid-template-columns: repeat(2,1fr); }
+  .thumb { height: 130px; }
+  .watch-content { grid-template-columns: 1fr; gap: 20px; }
+  .badge { display: none; }
+}
+@media (max-width: 480px) {
+  .video-grid { grid-template-columns: 1fr; }
+  .thumb { height: 185px; }
+  .hero h1 { letter-spacing: -2px; }
+  .form-footer { flex-direction: column; align-items: flex-start; }
+  .actions { width: 100%; }
+  .actions .btn { flex: 1; text-align: center; }
+  .lib-tools { gap: 8px; }
+  .search-box { flex: 1; }
+  .search-box input { width: 100%; }
+  footer { flex-direction: column; gap: 12px; }
+}
+</style>
+
+<!-- ambient glows -->
+<div class="ambient ambient-one"></div>
+<div class="ambient ambient-two"></div>
+
+<!-- ── TOPBAR ── -->
+<header class="topbar">
+  <div class="brand" id="brandBtn">
+    <span class="brand-mark">F</span>
+    <span>FRAME<span class="brand-dot">.</span></span>
+  </div>
+  <div class="topbar-right">
+    <span class="badge" id="badgeLabel"><i></i> LIBRARY</span>
+    <button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">◐</button>
+  </div>
+</header>
+
+<!-- ── LIBRARY VIEW ── -->
+<div class="view active" id="view-library">
+  <div class="shell">
+    <section class="hero">
+      <div class="eyebrow"><span class="eyebrow-line"></span> YOUR PERSONAL VIDEO CMS</div>
+      <h1>Build your own<br><em>video universe.</em></h1>
+      <p class="hero-copy">Drop CDN links, add metadata, and watch every video with a proper player. No database. No backend. Proxy-powered to beat CORS.</p>
+      <div class="hero-stats">
+        <div><strong id="statCount">0</strong><span>VIDEOS ADDED</span></div>
+        <div><strong>100%</strong><span>LOCAL STORAGE</span></div>
+        <div><strong>CF</strong><span>PROXY POWERED</span></div>
+      </div>
+    </section>
+
+    <!-- ADD FORM -->
+    <section class="section">
+      <div class="sec-head">
+        <div>
+          <div class="eyebrow">CONTENT MANAGER</div>
+          <h2>Add a video</h2>
+        </div>
+        <span class="step-label">01 <span>/</span> ADD CONTENT</span>
+      </div>
+      <form id="videoForm" class="editor-card">
+        <div class="form-grid">
+          <label class="field full">
+            <span class="label">VIDEO TITLE <b>*</b></span>
+            <input id="fTitle" required maxlength="120" placeholder="Give your video a name" autocomplete="off">
+          </label>
+          <label class="field full">
+            <span class="label">DESCRIPTION</span>
+            <textarea id="fDesc" rows="3" placeholder="What's this video about?"></textarea>
+          </label>
+          <label class="field">
+            <span class="label">TAGS <small>— COMMA SEPARATED</small></span>
+            <input id="fTags" placeholder="cinematic, tutorial, gaming">
+          </label>
+          <label class="field">
+            <span class="label">THUMBNAIL URL</span>
+            <input id="fThumb" type="url" placeholder="https://cdn.example.com/thumb.jpg">
+          </label>
+          <label class="field full">
+            <span class="label">VIDEO CDN / DIRECT URL <b>*</b></span>
+            <input id="fUrl" type="url" required placeholder="https://cdn.example.com/video.mp4">
+            <small>MP4, WebM, MKV, HLS (.m3u8) — proxy auto-applied for CORS-blocked CDNs</small>
+          </label>
+        </div>
+        <div class="form-footer">
+          <span class="req-note"><b>*</b> Required</span>
+          <div class="actions">
+            <button type="reset" class="btn btn-ghost">Clear</button>
+            <button type="submit" class="btn btn-primary">＋ Add video ↗</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- LIBRARY -->
+    <section class="section" id="libSection">
+      <div class="lib-head">
+        <div class="lib-left">
+          <div class="eyebrow">YOUR COLLECTION</div>
+          <h2>Library <span class="count-pill" id="libCount">0</span></h2>
+        </div>
+        <div class="lib-tools">
+          <label class="search-box">
+            <span>⌕</span>
+            <input id="searchInput" placeholder="Search…" autocomplete="off">
+          </label>
+          <button class="text-btn" id="clearAllBtn">Clear all</button>
+        </div>
+      </div>
+      <div id="videoGrid" class="video-grid"></div>
+      <div id="emptyState" class="empty-state">
+        <div class="empty-icon">▧</div>
+        <h3>Library is empty.</h3>
+        <p>Add your first video above — it shows up here instantly.</p>
+      </div>
+    </section>
+
+    <footer>
+      <span>FRAME<span class="brand-dot">.</span> VIDEO STUDIO</span>
+      <span>PROXY: jolly-poetry-a3ef.fnxturan.workers.dev</span>
+    </footer>
+  </div>
+</div>
+
+<!-- ── WATCH VIEW ── -->
+<div class="view" id="view-watch">
+  <div class="watch-shell">
+    <div class="watch-topline">
+      <div class="eyebrow"><span class="eyebrow-line"></span> NOW PLAYING</div>
+      <button class="back-btn" id="backBtn">← BACK TO LIBRARY</button>
+    </div>
+
+    <div class="player-wrap">
+      <video id="player" controls playsinline preload="metadata"></video>
+      <div class="player-overlay" id="playerOverlay">
+        <div class="loading-ring"></div>
+        <div class="overlay-title">Loading video…</div>
+        <div class="overlay-sub" id="overlaySubtitle">Connecting to CDN</div>
+      </div>
+    </div>
+
+    <div class="watch-content">
+      <div class="watch-main">
+        <div class="tag-row" id="watchTags"></div>
+        <h1 id="watchTitle">Loading…</h1>
+        <p class="watch-desc" id="watchDesc"></p>
+        <div class="watch-meta">
+          <span><i></i> CDN SOURCE</span>
+          <span id="watchDate"></span>
+        </div>
+      </div>
+      <aside class="source-card">
+        <div class="src-eyebrow">SOURCE DETAILS</div>
+        <span class="src-label">VIDEO URL</span>
+        <div class="src-url" id="srcUrl"></div>
+        <div class="method-row">
+          <span class="src-label" style="margin:0">METHOD</span>
+          <span class="method-chip" id="methodChip">—</span>
+        </div>
+        <button class="btn btn-ghost" id="copyUrlBtn" style="width:100%;margin-top:14px">Copy URL ↗</button>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  /* ── CONFIG ── */
+  const PROXY = 'https://jolly-poetry-a3ef.fnxturan.workers.dev';
+  const STORAGE_KEY = 'frame_library_v2';
+
+  /* ── ELEMENTS ── */
+  const viewLibrary = document.getElementById('view-library');
+  const viewWatch   = document.getElementById('view-watch');
+  const videoGrid   = document.getElementById('videoGrid');
+  const emptyState  = document.getElementById('emptyState');
+  const searchInput = document.getElementById('searchInput');
+  const statCount   = document.getElementById('statCount');
+  const libCount    = document.getElementById('libCount');
+  const badgeLabel  = document.getElementById('badgeLabel');
+  const toastEl     = document.getElementById('toast');
+
+  // watch elements
+  const player        = document.getElementById('player');
+  const playerOverlay = document.getElementById('playerOverlay');
+  const overlaySubtitle = document.getElementById('overlaySubtitle');
+  const methodChip    = document.getElementById('methodChip');
+  const watchTitle    = document.getElementById('watchTitle');
+  const watchDesc     = document.getElementById('watchDesc');
+  const watchTags     = document.getElementById('watchTags');
+  const watchDate     = document.getElementById('watchDate');
+  const srcUrl        = document.getElementById('srcUrl');
+
+  let videos = [];
+  let hlsInstance = null;
+
+  /* ── STORAGE ── */
+  function load() {
+    try { videos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { videos = []; }
+  }
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(videos)); } catch {}
+  }
+
+  /* ── TOAST ── */
+  let toastTimer;
+  function toast(msg) {
+    clearTimeout(toastTimer);
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2400);
+  }
+
+  /* ── HTML ESCAPE ── */
+  function esc(s = '') {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  /* ── ROUTING ── */
+  function showLibrary() {
+    viewLibrary.classList.add('active');
+    viewWatch.classList.remove('active');
+    badgeLabel.innerHTML = '<i></i> LIBRARY';
+    stopVideo();
+    render();
+  }
+
+  function showWatch(id) {
+    viewLibrary.classList.remove('active');
+    viewWatch.classList.add('active');
+    badgeLabel.innerHTML = '<i></i> NOW PLAYING';
+    loadVideo(id);
+  }
+
+  function route() {
+    const hash = location.hash;
+    if (hash.startsWith('#watch=')) {
+      showWatch(decodeURIComponent(hash.slice(7)));
+    } else {
+      showLibrary();
+    }
+  }
+
+  window.addEventListener('hashchange', route);
+  document.getElementById('brandBtn').addEventListener('click', () => { location.hash = ''; });
+  document.getElementById('backBtn').addEventListener('click', () => { location.hash = ''; });
+
+  /* ── THEME ── */
+  function applyTheme(t) {
+    if (t === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else if (t === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    try { localStorage.setItem('frame_theme', t || 'system'); } catch {}
+  }
+  document.getElementById('themeBtn').addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+    applyTheme(cur === 'dark' ? 'light' : 'dark');
+  });
+  try {
+    const saved = localStorage.getItem('frame_theme');
+    if (saved) applyTheme(saved);
+  } catch {}
+
+  /* ── RENDER LIBRARY ── */
+  function render() {
+    const q = searchInput.value.trim().toLowerCase();
+    const filtered = videos.filter(v =>
+      [v.title, v.description, (v.tags || []).join(' ')].join(' ').toLowerCase().includes(q)
+    );
+    statCount.textContent = videos.length;
+    libCount.textContent  = videos.length;
+
+    if (!filtered.length) {
+      videoGrid.innerHTML = '';
+      emptyState.hidden = false;
+      if (q) {
+        emptyState.innerHTML = '<div class="empty-icon">⌕</div><h3>No matches.</h3><p>Try a different title or tag.</p>';
+      } else {
+        emptyState.innerHTML = '<div class="empty-icon">▧</div><h3>Library is empty.</h3><p>Add your first video above — it shows up here instantly.</p>';
+      }
+      return;
+    }
+
+    emptyState.hidden = true;
+    videoGrid.innerHTML = filtered.map(v => `
+      <article class="video-card" data-id="${esc(v.id)}">
+        <div class="thumb">
+          ${v.thumbnail
+            ? `<img src="${esc(v.thumbnail)}" alt="" loading="lazy" onerror="this.remove()">`
+            : `<div class="thumb-placeholder">▧</div>`}
+          <span class="play-chip">▶</span>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">${esc(v.title)}</h3>
+          <p class="card-desc">${esc(v.description || 'No description.')}</p>
+          <div class="tag-row">${(v.tags || []).slice(0,4).map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+          <div class="card-bottom">
+            <span class="card-date">${new Date(v.createdAt).toLocaleDateString()}</span>
+            <div class="card-acts">
+              <button class="small-btn" data-watch="${esc(v.id)}">Open ↗</button>
+              <button class="small-btn del" data-del="${esc(v.id)}">Delete</button>
+            </div>
+          </div>
+        </div>
+      </article>
+    `).join('');
+  }
+
+  /* ── GRID EVENTS ── */
+  videoGrid.addEventListener('click', e => {
+    const watchBtn = e.target.closest('[data-watch]');
+    const delBtn   = e.target.closest('[data-del]');
+    const card     = e.target.closest('[data-id]');
+
+    if (watchBtn) {
+      location.hash = '#watch=' + encodeURIComponent(watchBtn.dataset.watch);
+      return;
+    }
+    if (delBtn) {
+      videos = videos.filter(v => v.id !== delBtn.dataset.del);
+      save(); render(); toast('Video removed.');
+      return;
+    }
+    if (card && !e.target.closest('button')) {
+      location.hash = '#watch=' + encodeURIComponent(card.dataset.id);
+    }
+  });
+
+  searchInput.addEventListener('input', render);
+
+  document.getElementById('clearAllBtn').addEventListener('click', () => {
+    if (!videos.length) return;
+    if (confirm('Delete every video from your local library?')) {
+      videos = []; save(); render(); toast('Library cleared.');
+    }
+  });
+
+  /* ── FORM SUBMIT ── */
+  document.getElementById('videoForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const v = {
+      id:          crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+      title:       document.getElementById('fTitle').value.trim(),
+      description: document.getElementById('fDesc').value.trim(),
+      tags:        document.getElementById('fTags').value.split(',').map(x => x.trim()).filter(Boolean),
+      url:         document.getElementById('fUrl').value.trim(),
+      thumbnail:   document.getElementById('fThumb').value.trim(),
+      createdAt:   new Date().toISOString(),
+    };
+    videos.unshift(v);
+    save();
+    e.target.reset();
+    render();
+    toast('Video added to library.');
+  });
+
+  /* ── VIDEO PLAYER ── */
+  function proxyUrl(url) {
+    return PROXY + '/proxy?url=' + encodeURIComponent(url);
+  }
+
+  function isHLS(url) {
+    return url.split('?')[0].toLowerCase().endsWith('.m3u8');
+  }
+
+  function setOverlay(icon, title, sub, showSpinner) {
+    playerOverlay.classList.remove('hidden');
+    playerOverlay.innerHTML = (showSpinner ? '<div class="loading-ring"></div>' : `<div class="overlay-icon">${icon}</div>`)
+      + `<div class="overlay-title">${title}</div>`
+      + (sub ? `<div class="overlay-sub">${sub}</div>` : '');
+  }
+
+  function hideOverlay() {
+    playerOverlay.classList.add('hidden');
+  }
+
+  function setMethod(label, state) {
+    methodChip.textContent = label;
+    methodChip.className = 'method-chip ' + (state || '');
+  }
+
+  function stopVideo() {
+    player.pause();
+    if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+    player.removeAttribute('src');
+    player.load();
+    setMethod('—', '');
+    playerOverlay.classList.remove('hidden');
+    playerOverlay.innerHTML = '<div class="overlay-icon">▧</div><div class="overlay-title">No video loaded</div>';
+  }
+
+  async function loadVideo(id) {
+    load();
+    const v = videos.find(v => v.id === id);
+    if (!v) {
+      setOverlay('⚠', 'Video not found', 'It may have been removed from this browser.', false);
+      return;
+    }
+
+    // fill metadata
+    watchTitle.textContent  = v.title;
+    watchDesc.textContent   = v.description || '';
+    watchDate.textContent   = new Date(v.createdAt).toLocaleDateString();
+    srcUrl.textContent      = v.url;
+    watchTags.innerHTML     = (v.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
+    if (v.thumbnail) player.setAttribute('poster', v.thumbnail);
+    else player.removeAttribute('poster');
+
+    setOverlay('', 'Loading video…', 'Connecting to CDN', true);
+    setMethod('trying direct…', '');
+
+    if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+
+    /* ── Strategy 1: direct ── */
+    const directOk = await tryDirect(v.url);
+    if (directOk) return;
+
+    /* ── Strategy 2: proxy direct ── */
+    setOverlay('', 'Applying proxy…', 'CORS blocked — routing through Cloudflare Worker', true);
+    setMethod('proxy…', '');
+
+    if (isHLS(v.url)) {
+      tryHLS(proxyUrl(v.url), 'HLS via proxy');
+      return;
+    }
+
+    const proxyOk = await tryDirect(proxyUrl(v.url));
+    if (proxyOk) { setMethod('proxy', 'ok'); return; }
+
+    /* ── Strategy 3: HLS.js fallback ── */
+    if (Hls && Hls.isSupported()) {
+      tryHLS(proxyUrl(v.url), 'HLS.js via proxy');
+      return;
+    }
+
+    setOverlay('⚠', 'Playback failed', 'CDN is blocking this video from loading in the browser.', false);
+    setMethod('failed', 'err');
+  }
+
+  function tryDirect(url) {
+    return new Promise(resolve => {
+      player.src = url;
+
+      const onReady = () => {
+        cleanup(); hideOverlay();
+        setMethod(url.includes(PROXY) ? 'proxy' : 'direct', 'ok');
+        player.play().catch(() => {});
+        resolve(true);
+      };
+      const onErr = () => { cleanup(); resolve(false); };
+
+      function cleanup() {
+        player.removeEventListener('canplay', onReady);
+        player.removeEventListener('error', onErr);
+      }
+
+      player.addEventListener('canplay', onReady, { once: true });
+      player.addEventListener('error',   onErr,   { once: true });
+      player.load();
+    });
+  }
+
+  function tryHLS(url, label) {
+    if (!window.Hls || !Hls.isSupported()) {
+      // native HLS (Safari)
+      player.src = url;
+      player.addEventListener('canplay', () => {
+        hideOverlay(); setMethod(label, 'ok'); player.play().catch(() => {});
+      }, { once: true });
+      player.addEventListener('error', () => {
+        setOverlay('⚠', 'HLS load failed', 'Check the stream URL.', false);
+        setMethod('failed', 'err');
+      }, { once: true });
+      return;
+    }
+    if (hlsInstance) hlsInstance.destroy();
+    hlsInstance = new Hls({ enableWorker: false });
+    hlsInstance.loadSource(url);
+    hlsInstance.attachMedia(player);
+    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+      hideOverlay(); setMethod(label, 'ok'); player.play().catch(() => {});
+    });
+    hlsInstance.on(Hls.Events.ERROR, (_, data) => {
+      if (data.fatal) {
+        setOverlay('⚠', 'HLS stream error', data.details || 'Stream could not be parsed.', false);
+        setMethod('failed', 'err');
+      }
+    });
+  }
+
+  /* ── COPY URL ── */
+  document.getElementById('copyUrlBtn').addEventListener('click', async () => {
+    const url = srcUrl.textContent;
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast('URL copied.');
+    } catch {
+      // fallback select
+      const range = document.createRange();
+      range.selectNodeContents(srcUrl);
+      const sel = window.getSelection();
+      sel.removeAllRanges(); sel.addRange(range);
+      toast('Select and copy manually.');
+    }
+  });
+
+  /* ── BOOT ── */
+  load();
+  route();
+})();
+</script>
+
+</body></html>
