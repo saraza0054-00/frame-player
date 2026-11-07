@@ -1,142 +1,11 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
-/* ── ADVANCED PLAYER ── */
-.player-wrap { isolation:isolate; user-select:none; touch-action:pan-y; }
-.player-wrap:fullscreen { width:100%; height:100%; aspect-ratio:auto; border:0; border-radius:0; }
-.player-wrap:fullscreen video { object-fit:contain; }
-.player-wrap video { object-fit:contain; }
-.player-controls {
-  position:absolute; inset:auto 0 0; z-index:4; padding:54px 18px 14px;
-  background:linear-gradient(transparent,rgba(0,0,0,.88));
-  opacity:1; transition:opacity .22s; color:#fff;
-}
-.player-wrap.ui-hidden .player-controls { opacity:0; pointer-events:none; }
-.player-wrap.ui-hidden { cursor:none; }
-.pc-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
-.pc-status { font-size:10px; color:rgba(255,255,255,.75); letter-spacing:.5px; }
-.pc-controls { display:flex; align-items:center; gap:10px; }
-.pc-left,.pc-right { display:flex; align-items:center; gap:8px; }
-.pc-spacer { flex:1; }
-.pc-btn {
-  border:0; background:transparent; color:#fff; min-width:34px; height:34px;
-  border-radius:9px; display:inline-flex; align-items:center; justify-content:center;
-  gap:6px; padding:0 8px; cursor:pointer; font:600 12px 'DM Sans';
-  transition:background .15s,color .15s;
-}
-.pc-btn:hover,.pc-btn:focus-visible { background:rgba(255,255,255,.15); color:var(--accent); outline:none; }
-.pc-btn svg { width:19px; height:19px; fill:currentColor; }
-.pc-time { font:500 11px 'DM Sans'; color:#fff; white-space:nowrap; font-variant-numeric:tabular-nums; }
-.pc-progress-wrap { position:relative; height:22px; display:flex; align-items:center; cursor:pointer; touch-action:pan-y; }
-.pc-track { position:relative; width:100%; height:4px; border-radius:9px; background:rgba(255,255,255,.28); transition:height .12s; }
-.pc-progress-wrap:hover .pc-track,.pc-progress-wrap.scrubbing .pc-track { height:7px; }
-.pc-buffered,.pc-played { position:absolute; inset:0 auto 0 0; width:0; border-radius:9px; pointer-events:none; }
-.pc-buffered { background:rgba(255,255,255,.42); }
-.pc-played { background:var(--accent); }
-.pc-thumb { position:absolute; top:50%; left:0; width:13px; height:13px; border-radius:50%; background:var(--accent); transform:translate(-50%,-50%) scale(0); transition:transform .12s; pointer-events:none; box-shadow:0 0 0 3px rgba(184,255,101,.16); }
-.pc-progress-wrap:hover .pc-thumb,.pc-progress-wrap.scrubbing .pc-thumb { transform:translate(-50%,-50%) scale(1); }
-.pc-range { position:absolute; inset:-8px 0; width:100%; height:22px; opacity:0; cursor:pointer; margin:0; }
-.pc-tooltip { position:absolute; bottom:20px; left:0; transform:translateX(-50%); padding:5px 7px; border-radius:5px; background:#080b10; border:1px solid rgba(255,255,255,.16); color:#fff; font:10px 'DM Sans'; white-space:nowrap; pointer-events:none; display:none; }
-.pc-progress-wrap:hover .pc-tooltip { display:block; }
-.pc-select {
-  appearance:none; border:1px solid rgba(255,255,255,.18); border-radius:7px;
-  background:rgba(12,15,20,.9); color:#fff; padding:7px 24px 7px 9px;
-  font:10px 'DM Sans'; outline:none; max-width:105px; cursor:pointer;
-}
-.pc-select option { background:#10141d; color:#fff; }
-.pc-volume { width:78px; accent-color:var(--accent); cursor:pointer; }
-.pc-center-play {
-  position:absolute; z-index:3; top:50%; left:50%; transform:translate(-50%,-50%);
-  width:62px; height:62px; border:1px solid rgba(255,255,255,.25); border-radius:50%;
-  background:rgba(0,0,0,.48); color:white; display:grid; place-items:center;
-  font-size:23px; cursor:pointer; backdrop-filter:blur(8px); transition:opacity .2s,transform .2s;
-}
-.pc-center-play:hover { transform:translate(-50%,-50%) scale(1.08); }
-.player-wrap.playing .pc-center-play { opacity:0; pointer-events:none; }
-.pc-settings-wrap { position:relative; }
-.pc-settings-menu {
-  position:absolute; right:0; bottom:44px; width:190px; padding:8px;
-  background:rgba(12,16,23,.97); border:1px solid rgba(255,255,255,.14);
-  border-radius:11px; box-shadow:0 12px 35px rgba(0,0,0,.45); display:none;
-}
-.pc-settings-menu.open { display:block; }
-.pc-menu-title { color:#9ba5b7; font-size:9px; letter-spacing:1px; padding:7px 8px; }
-.pc-menu-row { display:flex; justify-content:space-between; align-items:center; width:100%; padding:9px 8px; border:0; background:transparent; color:#fff; font:11px 'DM Sans'; border-radius:7px; cursor:pointer; text-align:left; }
-.pc-menu-row:hover { background:rgba(255,255,255,.09); }
-.pc-menu-row span:last-child { color:var(--accent); }
-.pc-buffering {
-  position:absolute; z-index:2; top:50%; left:50%; width:42px; height:42px;
-  margin:-21px; border:3px solid rgba(255,255,255,.18); border-top-color:var(--accent);
-  border-radius:50%; animation:spin .8s linear infinite; display:none; pointer-events:none;
-}
-.player-wrap.buffering .pc-buffering { display:block; }
-.player-wrap.buffering .pc-center-play { opacity:0; }
-.pc-toast {
-  position:absolute; z-index:5; top:16px; left:50%; transform:translateX(-50%);
-  background:rgba(0,0,0,.78); color:#fff; border:1px solid rgba(255,255,255,.15);
-  border-radius:8px; padding:8px 12px; font-size:11px; opacity:0; pointer-events:none; transition:opacity .2s;
-}
-.pc-toast.show { opacity:1; }
-@media(max-width:760px) {
-  .player-controls { padding:40px 10px 10px; }
-  .pc-btn { min-width:38px; height:40px; padding:0 7px; }
-  .pc-btn svg { width:21px; height:21px; }
-  .pc-volume { width:58px; }
-  .pc-select { max-width:88px; padding:7px 17px 7px 6px; }
-  .pc-controls { gap:4px; }
-  .pc-left,.pc-right { gap:3px; }
-  .pc-progress-wrap { height:26px; }
-  .pc-range { height:26px; }
-}
-@media(max-width:420px) {
-  .pc-volume-wrap { display:none; }
-  .pc-status { display:none; }
-  .pc-controls { flex-wrap:wrap; row-gap:4px; }
-  .pc-time { font-size:10px; }
-  .pc-select { max-width:78px; font-size:9px; }
-}
-@media(prefers-reduced-motion:reduce) {
-  .player-controls,.pc-center-play,.pc-thumb { transition:none; }
-}
-
-
-/* ── JSON IMPORT ── */
-.import-card{background:linear-gradient(145deg,rgba(20,26,37,.96),rgba(13,17,25,.96));border:1px solid var(--line);border-radius:18px;padding:22px;margin-top:22px}
-:root[data-theme="light"] .import-card{background:#fff}
-.import-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:14px}
-.import-head h3{font:600 18px 'Space Grotesk';margin:6px 0}
-.import-copy{font-size:11px;line-height:1.7;color:var(--muted);max-width:620px}
-.import-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px}
-.import-file{display:block;max-width:100%;width:100%;min-height:44px;padding:8px 10px;border:1px dashed var(--line);border-radius:10px;background:var(--bg);color:var(--text);font:12px 'DM Sans';cursor:pointer}
-.import-file::file-selector-button{border:0;border-radius:8px;background:var(--accent);color:#12180c;padding:9px 13px;margin-right:12px;font:600 11px 'DM Sans';cursor:pointer}
-.import-file::-webkit-file-upload-button{border:0;border-radius:8px;background:var(--accent);color:#12180c;padding:9px 13px;margin-right:12px;font:600 11px 'DM Sans';cursor:pointer}
-.import-status{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.6}
-.import-status.ok{color:var(--accent)}
-.import-status.err{color:var(--danger)}
-.import-format{margin-top:14px;padding:12px;border:1px solid var(--line);background:var(--bg);border-radius:10px;overflow:auto}
-.import-format pre{font:11px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--text);white-space:pre}
-.import-note{font-size:10px;color:var(--muted);margin-top:8px}
-/* ── HOLD TO SPEED ── */
-.player-wrap{touch-action:pan-y}
-.hold-speed-indicator{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.92);opacity:0;pointer-events:none;z-index:5;display:flex;align-items:center;gap:9px;padding:12px 17px;border:1px solid rgba(184,255,101,.35);border-radius:14px;background:rgba(8,12,17,.82);backdrop-filter:blur(14px);color:#d4ff9c;font:700 14px 'Space Grotesk';letter-spacing:.5px;box-shadow:0 12px 40px rgba(0,0,0,.35);transition:opacity .16s,transform .16s}
-.hold-speed-indicator.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
-.hold-speed-indicator .speed-pulse{width:8px;height:8px;border-radius:50%;background:#b8ff65;box-shadow:0 0 12px #b8ff65;animation:holdPulse .8s infinite alternate}
-@keyframes holdPulse{to{opacity:.35;transform:scale(.7)}}
-@media(max-width:760px){.import-card{padding:17px}.hold-speed-indicator{font-size:13px;padding:11px 15px}}
-
-</style></head><body>
-<title>FRAME — Video Studio</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><title>FRAME — Video Studio</title>
 <meta name="theme-color" content="#090b10">
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap">
-
-<!-- HLS.js for m3u8 support -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.7/hls.min.js"></script>
-
 <style>
-/* ── TOKENS ────────────────────────────────────────────── */
-/* Layout: two hash-routed views — library + watch — single page */
+/* ── TOKENS ── */
 :root {
   --bg:      #090b10;
   --panel:   #10141d;
@@ -149,8 +18,10 @@
   --danger:  #ff7777;
   --radius:  14px;
   color-scheme: dark;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top,0px);
+  padding-bottom: env(safe-area-inset-bottom,0px);
 }
-/* light override via data-theme */
 :root[data-theme="light"] {
   --bg:      #f0f4ed;
   --panel:   #ffffff;
@@ -177,504 +48,386 @@
     color-scheme: light;
   }
 }
-
+html { scroll-padding-top: env(safe-area-inset-top,0px); }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html, body {
-  height: 100%;
-}
-
+html, body { height: 100%; }
 body {
-  background: var(--bg);
-  color: var(--text);
+  background: var(--bg); color: var(--text);
   font-family: 'DM Sans', system-ui, sans-serif;
-  min-height: 100%;
-  overflow-x: hidden;
-  padding-left: max(0px, env(safe-area-inset-left, 0px));
-  padding-right: max(0px, env(safe-area-inset-right, 0px));
+  min-height: 100%; overflow-x: hidden;
+  padding-left: max(0px, env(safe-area-inset-left,0px));
+  padding-right: max(0px, env(safe-area-inset-right,0px));
 }
+img { max-width: 100%; }
+[hidden]:not([hidden=until-found i]) { display: none !important; }
 
 /* grid overlay */
 body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  opacity: .12;
-  background-image:
-    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+  content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .12;
+  background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
   background-size: 54px 54px;
   mask-image: linear-gradient(to bottom, black, transparent 70%);
   z-index: 0;
 }
-:root[data-theme="light"] body::before,
+:root[data-theme="light"] body::before { opacity: .04; }
 @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) body::before { opacity: .04; } }
 
 .ambient {
-  position: fixed;
-  width: 520px; height: 520px;
-  border-radius: 50%;
-  filter: blur(130px);
-  opacity: .11;
-  pointer-events: none;
-  z-index: 0;
+  position: fixed; width: 520px; height: 520px; border-radius: 50%;
+  filter: blur(130px); opacity: .11; pointer-events: none; z-index: 0;
 }
 .ambient-one { background: #8cff42; top: -350px; left: 15%; }
 .ambient-two { background: #436dff; right: -400px; top: 35%; }
 
 /* ── TOPBAR ── */
 .topbar {
-  height: 68px;
-  border-bottom: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 max(16px, env(safe-area-inset-left, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
-  padding-left: max(32px, calc(env(safe-area-inset-left, 0px) + 16px));
-  padding-right: max(32px, calc(env(safe-area-inset-right, 0px) + 16px));
-  position: sticky;
-  top: env(safe-area-inset-top, 0px);
-  z-index: 10;
-  background: rgba(9,11,16,.80);
-  backdrop-filter: blur(18px);
+  height: 68px; border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+  padding-left: max(32px, calc(env(safe-area-inset-left,0px) + 16px));
+  padding-right: max(32px, calc(env(safe-area-inset-right,0px) + 16px));
+  position: sticky; top: env(safe-area-inset-top,0px); z-index: 10;
+  background: rgba(9,11,16,.80); backdrop-filter: blur(18px);
 }
 :root[data-theme="light"] .topbar { background: rgba(240,244,237,.85); }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) .topbar { background: rgba(240,244,237,.85); }
 }
-
-.brand {
-  display: flex; align-items: center; gap: 10px;
-  text-decoration: none; color: var(--text);
-  font: 700 16px 'Space Grotesk'; letter-spacing: 2px;
-  cursor: pointer;
-}
-.brand-mark {
-  width: 28px; height: 28px; border-radius: 8px;
-  background: var(--accent); color: #11170b;
-  display: grid; place-items: center;
-  font-size: 16px; font-weight: 700;
-}
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font: 700 16px 'Space Grotesk'; letter-spacing: 2px; cursor: pointer; }
+.brand-mark { width: 28px; height: 28px; border-radius: 8px; background: var(--accent); color: #11170b; display: grid; place-items: center; font-size: 16px; font-weight: 700; }
 .brand-dot { color: var(--accent); }
-
 .topbar-right { display: flex; align-items: center; gap: 14px; }
-
-.badge {
-  font-size: 9px; letter-spacing: 1.4px; color: var(--muted);
-  border: 1px solid var(--line); border-radius: 30px; padding: 7px 11px;
-}
-.badge i {
-  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--accent); margin-right: 6px;
-  box-shadow: 0 0 10px var(--accent);
-}
-
-.icon-btn {
-  border: 1px solid var(--line); background: var(--panel);
-  color: var(--text); width: 34px; height: 34px;
-  border-radius: 10px; cursor: pointer; font-size: 14px;
-  display: grid; place-items: center;
-  transition: background .15s;
-}
+.badge { font-size: 9px; letter-spacing: 1.4px; color: var(--muted); border: 1px solid var(--line); border-radius: 30px; padding: 7px 11px; }
+.badge i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 6px; box-shadow: 0 0 10px var(--accent); }
+.icon-btn { border: 1px solid var(--line); background: var(--panel); color: var(--text); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 14px; display: grid; place-items: center; transition: background .15s; }
 .icon-btn:hover { background: var(--panel2); }
-
-.back-btn {
-  font-size: 9px; letter-spacing: 1px;
-  color: var(--muted); background: none;
-  border: none; cursor: pointer; padding: 0;
-  transition: color .15s;
-}
+.back-btn { font-size: 9px; letter-spacing: 1px; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0; transition: color .15s; }
 .back-btn:hover { color: var(--accent); }
 
-/* ── VIEW ROUTING ── */
+/* ── VIEWS ── */
 .view { display: none; }
 .view.active { display: block; }
 
-/* ── LIBRARY VIEW ── */
-.shell {
-  width: min(1120px, 88vw);
-  margin: auto;
-  position: relative; z-index: 1;
-  padding-block: 0 60px;
-}
-
+/* ── LIBRARY ── */
+.shell { width: min(1120px, 88vw); margin: auto; position: relative; z-index: 1; padding-block: 0 60px; }
 .hero { padding: 72px 0 56px; }
-
-.eyebrow {
-  font-size: 9px; letter-spacing: 2.1px; color: var(--muted);
-  font-weight: 700; display: flex; align-items: center; gap: 10px;
-}
+.eyebrow { font-size: 9px; letter-spacing: 2.1px; color: var(--muted); font-weight: 700; display: flex; align-items: center; gap: 10px; }
 .eyebrow-line { width: 22px; height: 1px; background: var(--accent); }
-
-.hero h1 {
-  font: 600 clamp(42px,6vw,72px)/1.04 'Space Grotesk';
-  letter-spacing: -3px; margin: 20px 0 16px;
-  text-wrap: balance;
-}
+.hero h1 { font: 600 clamp(42px,6vw,72px)/1.04 'Space Grotesk'; letter-spacing: -3px; margin: 20px 0 16px; text-wrap: balance; }
 .hero h1 em { color: var(--accent); font-style: normal; }
-
-.hero-copy {
-  color: var(--muted); max-width: 500px;
-  font-size: 14px; line-height: 1.8;
-}
-
-.hero-stats {
-  display: flex; gap: 52px; margin-top: 36px;
-  flex-wrap: wrap;
-}
+.hero-copy { color: var(--muted); max-width: 500px; font-size: 14px; line-height: 1.8; }
+.hero-stats { display: flex; gap: 52px; margin-top: 36px; flex-wrap: wrap; }
 .hero-stats div { display: flex; flex-direction: column; gap: 4px; }
-.hero-stats strong {
-  font: 600 22px 'Space Grotesk';
-  font-variant-numeric: tabular-nums;
-}
+.hero-stats strong { font: 600 22px 'Space Grotesk'; font-variant-numeric: tabular-nums; }
 .hero-stats span { font-size: 8px; letter-spacing: 1.5px; color: var(--muted); }
-
 .section { padding: 32px 0 52px; border-top: 1px solid var(--line); }
-
-.sec-head {
-  display: flex; align-items: flex-end; justify-content: space-between;
-  margin-bottom: 20px; gap: 16px;
-}
-.sec-head h2 {
-  font: 600 24px 'Space Grotesk'; letter-spacing: -.6px; margin: 8px 0 0;
-}
+.sec-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 20px; gap: 16px; }
+.sec-head h2 { font: 600 24px 'Space Grotesk'; letter-spacing: -.6px; margin: 8px 0 0; }
 .step-label { font-size: 9px; letter-spacing: 1.5px; color: var(--muted); flex-shrink: 0; }
 .step-label span { color: #4e5665; }
 
-/* ── EDITOR CARD ── */
-.editor-card {
-  background: linear-gradient(145deg, rgba(20,26,37,.96), rgba(13,17,25,.96));
-  border: 1px solid var(--line); border-radius: 18px;
-  padding: 26px;
-  box-shadow: 0 24px 80px rgba(0,0,0,.18);
-}
+/* EDITOR CARD */
+.editor-card { background: linear-gradient(145deg, rgba(20,26,37,.96), rgba(13,17,25,.96)); border: 1px solid var(--line); border-radius: 18px; padding: 26px; box-shadow: 0 24px 80px rgba(0,0,0,.18); }
 :root[data-theme="light"] .editor-card { background: #fff; }
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) .editor-card { background: #fff; }
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-}
-.field {
-  display: flex; flex-direction: column; gap: 8px; min-width: 0;
-}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .editor-card { background: #fff; } }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .field.full { grid-column: 1 / -1; }
-
-.field > .label {
-  font-size: 9px; font-weight: 700; letter-spacing: 1.3px; color: var(--muted);
-}
+.field > .label { font-size: 9px; font-weight: 700; letter-spacing: 1.3px; color: var(--muted); }
 .field .label b { color: var(--accent); }
 .field small { font-size: 9px; color: var(--muted); letter-spacing: .5px; }
-
-.field input, .field textarea {
-  width: 100%;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  color: var(--text);
-  border-radius: 10px;
-  padding: 13px 14px;
-  outline: none;
-  font: 12px 'DM Sans';
-  transition: border-color .2s, box-shadow .2s;
-}
-.field textarea {
-  resize: vertical; min-height: 90px; line-height: 1.6;
-}
-.field input:focus, .field textarea:focus {
-  border-color: rgba(184,255,101,.5);
-  box-shadow: 0 0 0 3px rgba(184,255,101,.06);
-}
+.field input, .field textarea { width: 100%; border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 10px; padding: 13px 14px; outline: none; font: 12px 'DM Sans'; transition: border-color .2s, box-shadow .2s; }
+.field textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+.field input:focus, .field textarea:focus { border-color: rgba(184,255,101,.5); box-shadow: 0 0 0 3px rgba(184,255,101,.06); }
 .field input::placeholder, .field textarea::placeholder { color: #596273; }
-
-.form-footer {
-  display: flex; align-items: center; justify-content: space-between;
-  border-top: 1px solid var(--line); margin-top: 22px; padding-top: 18px;
-  gap: 16px; flex-wrap: wrap;
-}
+.form-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); margin-top: 22px; padding-top: 18px; gap: 16px; flex-wrap: wrap; }
 .req-note { font-size: 10px; color: var(--muted); }
 .req-note b { color: var(--accent); }
-
 .actions { display: flex; gap: 10px; flex-wrap: wrap; }
-
-.btn {
-  border: none; border-radius: 9px;
-  padding: 11px 16px;
-  font: 600 11px 'DM Sans'; cursor: pointer;
-  transition: transform .18s, opacity .18s;
-  white-space: nowrap;
-}
+.btn { border: none; border-radius: 9px; padding: 11px 16px; font: 600 11px 'DM Sans'; cursor: pointer; transition: transform .18s, opacity .18s; white-space: nowrap; }
 .btn:hover { transform: translateY(-2px); }
 .btn:active { transform: scale(.97); }
-
-.btn-primary {
-  background: var(--accent); color: #12180c;
-  box-shadow: 0 7px 25px rgba(184,255,101,.12);
-}
-.btn-ghost {
-  background: var(--panel2); color: var(--muted);
-  border: 1px solid var(--line);
-}
+.btn-primary { background: var(--accent); color: #12180c; box-shadow: 0 7px 25px rgba(184,255,101,.12); }
+.btn-ghost { background: var(--panel2); color: var(--muted); border: 1px solid var(--line); }
 .btn-ghost:hover { color: var(--text); }
 
-/* ── LIBRARY ── */
-.lib-head {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 20px; gap: 16px; flex-wrap: wrap;
-}
+/* LIBRARY GRID */
+.lib-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 16px; flex-wrap: wrap; }
 .lib-left h2 { font: 600 24px 'Space Grotesk'; letter-spacing: -.6px; margin: 8px 0 0; }
-
-.count-pill {
-  font: 500 11px 'DM Sans'; color: var(--accent);
-  background: rgba(184,255,101,.1);
-  border: 1px solid rgba(184,255,101,.15);
-  padding: 4px 8px; border-radius: 20px;
-  vertical-align: middle; margin-left: 6px;
-  font-variant-numeric: tabular-nums;
-}
-
+.count-pill { font: 500 11px 'DM Sans'; color: var(--accent); background: rgba(184,255,101,.1); border: 1px solid rgba(184,255,101,.15); padding: 4px 8px; border-radius: 20px; vertical-align: middle; margin-left: 6px; font-variant-numeric: tabular-nums; }
 .lib-tools { display: flex; align-items: center; gap: 14px; }
-
-.search-box {
-  display: flex; align-items: center; gap: 7px;
-  background: var(--panel); border: 1px solid var(--line);
-  border-radius: 9px; padding-left: 11px; color: var(--muted);
-  transition: border-color .2s;
-}
+.search-box { display: flex; align-items: center; gap: 7px; background: var(--panel); border: 1px solid var(--line); border-radius: 9px; padding-left: 11px; color: var(--muted); transition: border-color .2s; }
 .search-box:focus-within { border-color: rgba(184,255,101,.4); }
-.search-box input {
-  border: none; background: transparent; color: var(--text);
-  width: 150px; padding: 9px 8px;
-  font: 12px 'DM Sans'; outline: none;
-}
+.search-box input { border: none; background: transparent; color: var(--text); width: 150px; padding: 9px 8px; font: 12px 'DM Sans'; outline: none; }
 .search-box input::placeholder { color: var(--muted); }
-
-.text-btn {
-  border: none; background: none;
-  color: var(--muted); font: 10px 'DM Sans';
-  cursor: pointer; transition: color .15s;
-}
+.text-btn { border: none; background: none; color: var(--muted); font: 10px 'DM Sans'; cursor: pointer; transition: color .15s; }
 .text-btn:hover { color: var(--danger); }
-
-.video-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-
-.video-card {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--panel);
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform .22s, border-color .22s;
-}
-.video-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(184,255,101,.3);
-}
-
-.thumb {
-  height: 160px;
-  background: var(--panel2);
-  position: relative; overflow: hidden;
-}
-.thumb img {
-  width: 100%; height: 100%; object-fit: cover;
-  display: block; transition: transform .4s;
-}
+.video-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.video-card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); overflow: hidden; cursor: pointer; transition: transform .22s, border-color .22s; }
+.video-card:hover { transform: translateY(-4px); border-color: rgba(184,255,101,.3); }
+.thumb { height: 160px; background: var(--panel2); position: relative; overflow: hidden; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s; }
 .video-card:hover .thumb img { transform: scale(1.04); }
-.thumb-placeholder {
-  height: 100%; display: grid; place-items: center;
-  color: var(--muted); font-size: 32px;
-  background: radial-gradient(circle at 50% 50%, #242d3c, #111722);
-}
-:root[data-theme="light"] .thumb-placeholder,
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) .thumb-placeholder { background: radial-gradient(circle at 50%, #e6ede0, #cdd7c5); }
-}
-.play-chip {
-  position: absolute; right: 10px; bottom: 10px;
-  width: 32px; height: 32px; border-radius: 50%;
-  display: grid; place-items: center;
-  background: var(--accent); color: #10150b; font-size: 11px;
-  box-shadow: 0 4px 16px rgba(0,0,0,.5);
-}
-
+.thumb-placeholder { height: 100%; display: grid; place-items: center; color: var(--muted); font-size: 32px; background: radial-gradient(circle at 50% 50%, #242d3c, #111722); }
+:root[data-theme="light"] .thumb-placeholder { background: radial-gradient(circle at 50%, #e6ede0, #cdd7c5); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .thumb-placeholder { background: radial-gradient(circle at 50%, #e6ede0, #cdd7c5); } }
+.play-chip { position: absolute; right: 10px; bottom: 10px; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: #10150b; font-size: 11px; box-shadow: 0 4px 16px rgba(0,0,0,.5); }
 .card-body { padding: 14px; }
-.card-title {
-  font: 600 14px 'Space Grotesk';
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  margin: 0 0 6px;
-}
-.card-desc {
-  font-size: 10px; line-height: 1.6; color: var(--muted);
-  height: 32px; overflow: hidden; margin: 0 0 10px;
-}
+.card-title { font: 600 14px 'Space Grotesk'; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 0 6px; }
+.card-desc { font-size: 10px; line-height: 1.6; color: var(--muted); height: 32px; overflow: hidden; margin: 0 0 10px; }
 .tag-row { display: flex; gap: 5px; flex-wrap: wrap; }
-.tag {
-  font-size: 8px; color: var(--accent2);
-  background: rgba(184,255,101,.08);
-  border: 1px solid rgba(184,255,101,.12);
-  border-radius: 20px; padding: 4px 7px;
-}
-:root[data-theme="light"] .tag, @media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) .tag { color: #3d6e00; background: rgba(61,138,0,.08); border-color: rgba(61,138,0,.15); }
-}
-
-.card-bottom {
-  display: flex; align-items: center; justify-content: space-between;
-  border-top: 1px solid var(--line);
-  padding-top: 10px; margin-top: 12px;
-}
+.tag { font-size: 8px; color: var(--accent2); background: rgba(184,255,101,.08); border: 1px solid rgba(184,255,101,.12); border-radius: 20px; padding: 4px 7px; }
+:root[data-theme="light"] .tag { color: #3d6e00; background: rgba(61,138,0,.08); border-color: rgba(61,138,0,.15); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .tag { color: #3d6e00; background: rgba(61,138,0,.08); border-color: rgba(61,138,0,.15); } }
+.card-bottom { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 10px; margin-top: 12px; }
 .card-date { font-size: 9px; color: var(--muted); }
 .card-acts { display: flex; gap: 6px; }
-.small-btn {
-  border: 1px solid var(--line); background: var(--panel2);
-  color: var(--muted); border-radius: 7px;
-  padding: 5px 9px; font-size: 9px; cursor: pointer;
-  transition: color .15s, border-color .15s;
-}
+.small-btn { border: 1px solid var(--line); background: var(--panel2); color: var(--muted); border-radius: 7px; padding: 5px 9px; font-size: 9px; cursor: pointer; transition: color .15s, border-color .15s; }
 .small-btn:hover { color: var(--accent); border-color: rgba(184,255,101,.3); }
 .small-btn.del:hover { color: var(--danger); border-color: rgba(255,119,119,.3); }
-
-.empty-state {
-  text-align: center; padding: 60px 20px; color: var(--muted);
-}
+.empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
 .empty-icon { font-size: 28px; margin-bottom: 14px; }
 .empty-state h3 { font: 600 17px 'Space Grotesk'; color: var(--text); margin-bottom: 6px; }
 .empty-state p { font-size: 11px; }
-
-footer {
-  border-top: 1px solid var(--line);
-  padding: 22px 0 28px;
-  display: flex; justify-content: space-between;
-  color: var(--muted); font-size: 8px; letter-spacing: 1.3px;
-}
+footer { border-top: 1px solid var(--line); padding: 22px 0 28px; display: flex; justify-content: space-between; color: var(--muted); font-size: 8px; letter-spacing: 1.3px; }
 
 /* ── WATCH VIEW ── */
-.watch-shell {
-  width: min(1100px, 88vw);
-  margin: 40px auto 80px;
-  position: relative; z-index: 1;
-}
-
-.watch-topline {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 16px;
-}
-
+.watch-shell { width: min(1100px, 88vw); margin: 40px auto 80px; position: relative; z-index: 1; }
+.watch-topline { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .player-wrap {
   position: relative; width: 100%; aspect-ratio: 16/9;
-  background: #020305;
-  border: 1px solid var(--line); border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 28px 100px rgba(0,0,0,.5);
+  background: #020305; border: 1px solid var(--line); border-radius: 16px;
+  overflow: hidden; box-shadow: 0 28px 100px rgba(0,0,0,.5);
+  user-select: none;
+  /* GPU compositing layer for 60fps */
+  will-change: transform;
+  transform: translateZ(0);
 }
-.player-wrap video {
-  width: 100%; height: 100%; display: block;
-  background: #020305; object-fit: contain;
-}
+.player-wrap:fullscreen { width: 100%; height: 100%; aspect-ratio: auto; border: 0; border-radius: 0; }
+.player-wrap:fullscreen video { object-fit: contain; }
+.player-wrap video { width: 100%; height: 100%; display: block; background: #020305; object-fit: contain; }
 
-.player-overlay {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 10px; background: #090d14;
-  color: var(--muted); text-align: center;
-  padding: 16px;
-  transition: opacity .25s;
-}
+/* ── PLAYER OVERLAY ── */
+.player-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: #090d14; color: var(--muted); text-align: center; padding: 16px; transition: opacity .25s; }
 .player-overlay.hidden { display: none; }
 .overlay-icon { font-size: 26px; color: var(--accent); margin-bottom: 4px; }
 .overlay-title { font: 600 16px 'Space Grotesk'; color: var(--text); }
 .overlay-sub { font-size: 11px; color: var(--muted); max-width: 360px; }
-.overlay-method {
-  font: 600 10px 'DM Sans'; letter-spacing: 1px;
-  color: var(--accent); background: rgba(184,255,101,.1);
-  border: 1px solid rgba(184,255,101,.2);
-  border-radius: 20px; padding: 5px 12px; margin-top: 8px;
-}
-
-.loading-ring {
-  width: 36px; height: 36px; border-radius: 50%;
-  border: 3px solid rgba(184,255,101,.15);
-  border-top-color: var(--accent);
-  animation: spin .8s linear infinite;
-  margin-bottom: 4px;
-}
+.overlay-method { font: 600 10px 'DM Sans'; letter-spacing: 1px; color: var(--accent); background: rgba(184,255,101,.1); border: 1px solid rgba(184,255,101,.2); border-radius: 20px; padding: 5px 12px; margin-top: 8px; }
+.loading-ring { width: 36px; height: 36px; border-radius: 50%; border: 3px solid rgba(184,255,101,.15); border-top-color: var(--accent); animation: spin .8s linear infinite; margin-bottom: 4px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.watch-content {
-  display: grid; grid-template-columns: 1fr 290px;
-  gap: 40px; padding: 28px 0 0;
+/* ── PLAYER CONTROLS ── */
+.player-controls {
+  position: absolute; inset: auto 0 0; z-index: 4; padding: 54px 18px 14px;
+  background: linear-gradient(transparent, rgba(0,0,0,.88));
+  /* smooth fade with hardware acceleration */
+  opacity: 1;
+  transition: opacity .22s cubic-bezier(.4,0,.2,1);
+  color: #fff;
+  will-change: opacity;
+  transform: translateZ(0);
 }
-.watch-main h1 {
-  font: 600 clamp(24px,4vw,36px)/1.1 'Space Grotesk';
-  letter-spacing: -1.2px; margin: 14px 0 10px;
-  text-wrap: balance;
+.player-wrap.ui-hidden .player-controls { opacity: 0; pointer-events: none; }
+.player-wrap.ui-hidden { cursor: none; }
+.pc-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.pc-status { font-size: 10px; color: rgba(255,255,255,.75); letter-spacing: .5px; }
+.pc-controls { display: flex; align-items: center; gap: 10px; }
+.pc-left, .pc-right { display: flex; align-items: center; gap: 8px; }
+.pc-spacer { flex: 1; }
+.pc-btn {
+  border: 0; background: transparent; color: #fff;
+  min-width: 34px; height: 34px; border-radius: 9px;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 0 8px; cursor: pointer;
+  font: 600 12px 'DM Sans';
+  transition: background .15s, color .15s, transform .1s;
+  will-change: transform;
 }
-.watch-desc { font-size: 13px; line-height: 1.8; color: var(--muted); white-space: pre-wrap; }
-.watch-meta {
-  display: flex; gap: 18px; margin-top: 22px;
-  color: var(--muted); font-size: 9px; letter-spacing: 1px;
-}
-.watch-meta i {
-  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--accent); margin-right: 6px;
-  box-shadow: 0 0 10px var(--accent);
-}
+.pc-btn:hover, .pc-btn:focus-visible { background: rgba(255,255,255,.15); color: var(--accent); outline: none; }
+.pc-btn:active { transform: scale(.9); }
+.pc-btn svg { width: 19px; height: 19px; fill: currentColor; }
+.pc-time { font: 500 11px 'DM Sans'; color: #fff; white-space: nowrap; font-variant-numeric: tabular-nums; }
 
-.source-card {
-  background: var(--panel);
-  border: 1px solid var(--line); border-radius: 13px;
-  padding: 18px; height: max-content;
+/* PROGRESS BAR — optimized for 60fps via RAF */
+.pc-progress-wrap { position: relative; height: 22px; display: flex; align-items: center; cursor: pointer; touch-action: none; }
+.pc-track { position: relative; width: 100%; height: 4px; border-radius: 9px; background: rgba(255,255,255,.28); transition: height .12s cubic-bezier(.4,0,.2,1); will-change: height; }
+.pc-progress-wrap:hover .pc-track, .pc-progress-wrap.scrubbing .pc-track { height: 7px; }
+.pc-buffered, .pc-played {
+  position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 9px; pointer-events: none;
+  /* GPU layer for smooth width animation */
+  will-change: width;
+  transform: translateZ(0);
 }
-.src-eyebrow {
-  font-size: 8px; letter-spacing: 1.3px; color: var(--muted);
-  margin-bottom: 16px; font-weight: 700;
+.pc-buffered { background: rgba(255,255,255,.42); }
+.pc-played { background: var(--accent); }
+.pc-thumb {
+  position: absolute; top: 50%; left: 0; width: 13px; height: 13px;
+  border-radius: 50%; background: var(--accent);
+  transform: translate(-50%,-50%) scale(0);
+  transition: transform .12s cubic-bezier(.34,1.56,.64,1);
+  pointer-events: none; box-shadow: 0 0 0 3px rgba(184,255,101,.16);
+  will-change: transform, left;
 }
-.src-label {
-  display: block; font-size: 8px; letter-spacing: 1.2px;
-  color: var(--muted); margin: 18px 0 7px;
+.pc-progress-wrap:hover .pc-thumb, .pc-progress-wrap.scrubbing .pc-thumb { transform: translate(-50%,-50%) scale(1); }
+.pc-range { position: absolute; inset: -8px 0; width: 100%; height: 22px; opacity: 0; cursor: pointer; margin: 0; touch-action: none; }
+.pc-tooltip { position: absolute; bottom: 20px; left: 0; transform: translateX(-50%); padding: 5px 7px; border-radius: 5px; background: #080b10; border: 1px solid rgba(255,255,255,.16); color: #fff; font: 10px 'DM Sans'; white-space: nowrap; pointer-events: none; display: none; }
+.pc-progress-wrap:hover .pc-tooltip { display: block; }
+.pc-select { appearance: none; border: 1px solid rgba(255,255,255,.18); border-radius: 7px; background: rgba(12,15,20,.9); color: #fff; padding: 7px 24px 7px 9px; font: 10px 'DM Sans'; outline: none; max-width: 105px; cursor: pointer; }
+.pc-select option { background: #10141d; color: #fff; }
+.pc-volume { width: 78px; accent-color: var(--accent); cursor: pointer; }
+
+/* CENTER PLAY/PAUSE BUTTON */
+.pc-center-play {
+  position: absolute; z-index: 3; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 62px; height: 62px; border: 1px solid rgba(255,255,255,.25);
+  border-radius: 50%; background: rgba(0,0,0,.48); color: white;
+  display: grid; place-items: center; font-size: 23px; cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: opacity .2s, transform .2s cubic-bezier(.34,1.56,.64,1);
+  will-change: opacity, transform;
 }
-.src-url {
-  font-size: 10px; line-height: 1.6; color: var(--text);
-  word-break: break-all; max-height: 80px;
-  overflow: auto;
-  background: var(--bg); border-radius: 8px; padding: 8px 10px;
-  border: 1px solid var(--line);
+.pc-center-play:hover { transform: translate(-50%,-50%) scale(1.1); }
+.pc-center-play:active { transform: translate(-50%,-50%) scale(.95); }
+.player-wrap.playing .pc-center-play { opacity: 0; pointer-events: none; }
+
+/* SETTINGS MENU */
+.pc-settings-wrap { position: relative; }
+.pc-settings-menu { position: absolute; right: 0; bottom: 44px; width: 200px; padding: 8px; background: rgba(12,16,23,.97); border: 1px solid rgba(255,255,255,.14); border-radius: 11px; box-shadow: 0 12px 35px rgba(0,0,0,.45); display: none; }
+.pc-settings-menu.open { display: block; animation: menuIn .15s ease; }
+@keyframes menuIn { from { opacity:0; transform: translateY(6px) scale(.97); } to { opacity:1; transform: translateY(0) scale(1); } }
+.pc-menu-title { color: #9ba5b7; font-size: 9px; letter-spacing: 1px; padding: 7px 8px; }
+.pc-menu-row { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 9px 8px; border: 0; background: transparent; color: #fff; font: 11px 'DM Sans'; border-radius: 7px; cursor: pointer; text-align: left; }
+.pc-menu-row:hover { background: rgba(255,255,255,.09); }
+.pc-menu-row span:last-child { color: var(--accent); }
+
+/* BUFFERING SPINNER */
+.pc-buffering { position: absolute; z-index: 2; top: 50%; left: 50%; width: 42px; height: 42px; margin: -21px; border: 3px solid rgba(255,255,255,.18); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; display: none; pointer-events: none; }
+.player-wrap.buffering .pc-buffering { display: block; }
+.player-wrap.buffering .pc-center-play { opacity: 0; }
+
+/* PLAYER TOAST */
+.pc-toast { position: absolute; z-index: 5; top: 16px; left: 50%; transform: translateX(-50%) translateY(-6px); background: rgba(0,0,0,.78); color: #fff; border: 1px solid rgba(255,255,255,.15); border-radius: 8px; padding: 8px 12px; font-size: 11px; opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; white-space: nowrap; }
+.pc-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── DOUBLE TAP SEEK OVERLAY ── */
+.dbl-tap-zone {
+  position: absolute; top: 0; bottom: 0; width: 35%; z-index: 3;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  /* touch-action handled per zone */
 }
-.method-row {
-  display: flex; align-items: center; gap: 8px;
-  margin: 12px 0 0;
+.dbl-tap-zone.left { left: 0; }
+.dbl-tap-zone.right { right: 0; }
+.dbl-tap-ripple {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; opacity: 0; pointer-events: none;
+  transition: opacity .22s;
+  border-radius: inherit;
 }
-.method-chip {
-  font-size: 9px; letter-spacing: .8px;
-  padding: 4px 8px; border-radius: 6px;
-  background: var(--bg); border: 1px solid var(--line);
-  color: var(--muted); transition: all .2s;
+.dbl-tap-ripple.show { opacity: 1; }
+.dbl-tap-arc {
+  display: flex; gap: 3px; color: white; font-size: 20px;
+  animation: arcPop .3s ease;
 }
+@keyframes arcPop { from { transform: scale(.7); opacity:.4; } to { transform: scale(1); opacity:1; } }
+.dbl-tap-label { color: white; font: 700 11px 'DM Sans'; letter-spacing: .5px; }
+/* left zone — right-arced, right zone — left-arced */
+.dbl-tap-zone.left .dbl-tap-ripple { background: radial-gradient(ellipse at 100%, rgba(255,255,255,.18) 0%, transparent 70%); border-radius: 0 50% 50% 0; }
+.dbl-tap-zone.right .dbl-tap-ripple { background: radial-gradient(ellipse at 0%, rgba(255,255,255,.18) 0%, transparent 70%); border-radius: 50% 0 0 50%; }
+
+/* ── HOLD TO SPEED ── */
+.hold-speed-indicator {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%,-50%) scale(.92);
+  opacity: 0; pointer-events: none; z-index: 5;
+  display: flex; align-items: center; gap: 9px; padding: 12px 17px;
+  border: 1px solid rgba(184,255,101,.35); border-radius: 14px;
+  background: rgba(8,12,17,.82); backdrop-filter: blur(14px);
+  color: #d4ff9c; font: 700 14px 'Space Grotesk'; letter-spacing: .5px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.35);
+  transition: opacity .16s, transform .16s;
+  will-change: opacity, transform;
+}
+.hold-speed-indicator.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+.speed-pulse { width: 8px; height: 8px; border-radius: 50%; background: #b8ff65; box-shadow: 0 0 12px #b8ff65; animation: holdPulse .8s infinite alternate; }
+@keyframes holdPulse { to { opacity: .35; transform: scale(.7); } }
+
+/* ── DOWNLOAD POPUP ── */
+.dl-modal-bg {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,.72); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+.dl-modal-bg.open { opacity: 1; pointer-events: all; }
+.dl-modal {
+  background: #10141d; border: 1px solid rgba(255,255,255,.12);
+  border-radius: 18px; padding: 28px; width: min(440px, 92vw);
+  box-shadow: 0 32px 80px rgba(0,0,0,.6);
+  transform: translateY(12px) scale(.97);
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1);
+}
+.dl-modal-bg.open .dl-modal { transform: translateY(0) scale(1); }
+.dl-modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.dl-modal-head h3 { font: 700 16px 'Space Grotesk'; color: #fff; }
+.dl-close { background: rgba(255,255,255,.08); border: none; color: #fff; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 14px; display: grid; place-items: center; transition: background .15s; }
+.dl-close:hover { background: rgba(255,255,255,.18); }
+.dl-row { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+.dl-label { font: 600 9px 'DM Sans'; letter-spacing: 1.2px; color: #8b94a6; }
+.dl-select { width: 100%; appearance: none; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); border-radius: 9px; color: #fff; padding: 11px 14px; font: 13px 'DM Sans'; outline: none; cursor: pointer; }
+.dl-select:focus { border-color: rgba(184,255,101,.5); }
+.dl-select option { background: #10141d; }
+.dl-info { font: 11px 'DM Sans'; color: #8b94a6; line-height: 1.6; margin-bottom: 18px; padding: 12px; background: rgba(255,255,255,.04); border-radius: 9px; border: 1px solid rgba(255,255,255,.07); }
+.dl-info code { color: var(--accent); font: 11px ui-monospace, monospace; }
+.dl-actions { display: flex; gap: 10px; }
+.dl-actions .btn { flex: 1; text-align: center; justify-content: center; }
+.dl-btn-primary { background: var(--accent); color: #12180c; }
+.dl-progress { margin-top: 14px; display: none; }
+.dl-progress-bar { height: 3px; background: rgba(255,255,255,.12); border-radius: 2px; overflow: hidden; }
+.dl-progress-fill { height: 100%; background: var(--accent); width: 0; transition: width .3s; border-radius: 2px; }
+.dl-progress-text { font: 10px 'DM Sans'; color: #8b94a6; margin-top: 7px; text-align: center; }
+
+/* WATCH CONTENT */
+.watch-content { display: grid; grid-template-columns: 1fr 290px; gap: 40px; padding: 28px 0 0; }
+.watch-main h1 { font: 600 clamp(24px,4vw,36px)/1.1 'Space Grotesk'; letter-spacing: -1.2px; margin: 14px 0 10px; text-wrap: balance; }
+.watch-desc { font-size: 13px; line-height: 1.8; color: var(--muted); white-space: pre-wrap; }
+.watch-meta { display: flex; gap: 18px; margin-top: 22px; color: var(--muted); font-size: 9px; letter-spacing: 1px; }
+.watch-meta i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 6px; box-shadow: 0 0 10px var(--accent); }
+.source-card { background: var(--panel); border: 1px solid var(--line); border-radius: 13px; padding: 18px; height: max-content; }
+.src-eyebrow { font-size: 8px; letter-spacing: 1.3px; color: var(--muted); margin-bottom: 16px; font-weight: 700; }
+.src-label { display: block; font-size: 8px; letter-spacing: 1.2px; color: var(--muted); margin: 18px 0 7px; }
+.src-url { font-size: 10px; line-height: 1.6; color: var(--text); word-break: break-all; max-height: 80px; overflow: auto; background: var(--bg); border-radius: 8px; padding: 8px 10px; border: 1px solid var(--line); }
+.method-row { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; }
+.method-chip { font-size: 9px; letter-spacing: .8px; padding: 4px 8px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); color: var(--muted); transition: all .2s; }
 .method-chip.ok { border-color: rgba(184,255,101,.4); color: var(--accent); }
 .method-chip.err { border-color: rgba(255,119,119,.3); color: var(--danger); }
 
-/* ── TOAST ── */
-.toast {
-  position: fixed; bottom: 24px; left: 50%;
-  transform: translate(-50%, 20px);
-  opacity: 0; pointer-events: none;
-  background: var(--accent2); color: #12180c;
-  padding: 11px 18px; border-radius: 9px;
-  font: 700 11px 'DM Sans'; z-index: 20;
-  transition: .25s; white-space: nowrap;
-}
+/* GLOBAL TOAST */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; background: var(--accent2); color: #12180c; padding: 11px 18px; border-radius: 9px; font: 700 11px 'DM Sans'; z-index: 20; transition: .25s; white-space: nowrap; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
-/* ── RESPONSIVE ── */
+/* JSON IMPORT */
+.import-card { background: linear-gradient(145deg,rgba(20,26,37,.96),rgba(13,17,25,.96)); border: 1px solid var(--line); border-radius: 18px; padding: 22px; margin-top: 22px; }
+:root[data-theme="light"] .import-card { background: #fff; }
+.import-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+.import-head h3 { font: 600 18px 'Space Grotesk'; margin: 6px 0; }
+.import-copy { font-size: 11px; line-height: 1.7; color: var(--muted); max-width: 620px; }
+.import-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.import-file { display: block; max-width: 100%; width: 100%; min-height: 44px; padding: 8px 10px; border: 1px dashed var(--line); border-radius: 10px; background: var(--bg); color: var(--text); font: 12px 'DM Sans'; cursor: pointer; }
+.import-file::file-selector-button { border: 0; border-radius: 8px; background: var(--accent); color: #12180c; padding: 9px 13px; margin-right: 12px; font: 600 11px 'DM Sans'; cursor: pointer; }
+.import-file::-webkit-file-upload-button { border: 0; border-radius: 8px; background: var(--accent); color: #12180c; padding: 9px 13px; margin-right: 12px; font: 600 11px 'DM Sans'; cursor: pointer; }
+.import-status { font-size: 11px; color: var(--muted); margin-top: 12px; line-height: 1.6; }
+.import-status.ok { color: var(--accent); }
+.import-status.err { color: var(--danger); }
+.import-format { margin-top: 14px; padding: 12px; border: 1px solid var(--line); background: var(--bg); border-radius: 10px; overflow: auto; }
+.import-format pre { font: 11px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace; color: var(--text); white-space: pre; }
+.import-note { font-size: 10px; color: var(--muted); margin-top: 8px; }
+
+/* RESPONSIVE */
 @media (max-width: 760px) {
   .shell, .watch-shell { width: 92vw; }
   .hero { padding: 52px 0 40px; }
@@ -686,6 +439,17 @@ footer {
   .thumb { height: 130px; }
   .watch-content { grid-template-columns: 1fr; gap: 20px; }
   .badge { display: none; }
+  .player-controls { padding: 40px 10px 10px; }
+  .pc-btn { min-width: 38px; height: 40px; padding: 0 7px; }
+  .pc-btn svg { width: 21px; height: 21px; }
+  .pc-volume { width: 58px; }
+  .pc-select { max-width: 88px; padding: 7px 17px 7px 6px; }
+  .pc-controls { gap: 4px; }
+  .pc-left, .pc-right { gap: 3px; }
+  .pc-progress-wrap { height: 26px; }
+  .pc-range { height: 26px; }
+  .import-card { padding: 17px; }
+  .hold-speed-indicator { font-size: 13px; padding: 11px 15px; }
 }
 @media (max-width: 480px) {
   .video-grid { grid-template-columns: 1fr; }
@@ -698,14 +462,24 @@ footer {
   .search-box { flex: 1; }
   .search-box input { width: 100%; }
   footer { flex-direction: column; gap: 12px; }
+  .pc-volume-wrap { display: none; }
+  .pc-status { display: none; }
+  .pc-controls { flex-wrap: wrap; row-gap: 4px; }
+  .pc-time { font-size: 10px; }
+  .pc-select { max-width: 78px; font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .player-controls, .pc-center-play, .pc-thumb { transition: none; }
+  .dbl-tap-arc { animation: none; }
 }
 </style>
+</head>
+<body>
 
-<!-- ambient glows -->
 <div class="ambient ambient-one"></div>
 <div class="ambient ambient-two"></div>
 
-<!-- ── TOPBAR ── -->
+<!-- TOPBAR -->
 <header class="topbar">
   <div class="brand" id="brandBtn">
     <span class="brand-mark">F</span>
@@ -717,7 +491,7 @@ footer {
   </div>
 </header>
 
-<!-- ── LIBRARY VIEW ── -->
+<!-- LIBRARY VIEW -->
 <div class="view active" id="view-library">
   <div class="shell">
     <section class="hero">
@@ -731,7 +505,6 @@ footer {
       </div>
     </section>
 
-    <!-- ADD FORM -->
     <section class="section">
       <div class="sec-head">
         <div>
@@ -774,8 +547,6 @@ footer {
       </form>
     </section>
 
-
-    <!-- JSON IMPORT -->
     <section class="section" id="importSection">
       <div class="sec-head">
         <div>
@@ -810,7 +581,6 @@ footer {
       </div>
     </section>
 
-    <!-- LIBRARY -->
     <section class="section" id="libSection">
       <div class="lib-head">
         <div class="lib-left">
@@ -840,7 +610,7 @@ footer {
   </div>
 </div>
 
-<!-- ── WATCH VIEW ── -->
+<!-- WATCH VIEW -->
 <div class="view" id="view-watch">
   <div class="watch-shell">
     <div class="watch-topline">
@@ -848,22 +618,42 @@ footer {
       <button class="back-btn" id="backBtn">← BACK TO LIBRARY</button>
     </div>
 
-    <div class="player-wrap">
+    <div class="player-wrap" id="playerWrap">
       <video id="player" playsinline webkit-playsinline preload="metadata"></video>
+
+      <!-- Double-tap zones (mobile) -->
+      <div class="dbl-tap-zone left" id="dblLeft">
+        <div class="dbl-tap-ripple" id="dblLeftRipple">
+          <div class="dbl-tap-arc">◀◀</div>
+          <div class="dbl-tap-label" id="dblLeftLabel">-10s</div>
+        </div>
+      </div>
+      <div class="dbl-tap-zone right" id="dblRight">
+        <div class="dbl-tap-ripple" id="dblRightRipple">
+          <div class="dbl-tap-arc">▶▶</div>
+          <div class="dbl-tap-label" id="dblRightLabel">+10s</div>
+        </div>
+      </div>
+
       <button class="pc-center-play" id="pcCenterPlay" aria-label="Play video">▶</button>
       <div class="pc-buffering"></div>
       <div class="pc-toast" id="pcToast"></div>
+
       <div class="player-controls" id="pcControls">
         <div class="pc-progress-wrap" id="pcProgressWrap">
-          <div class="pc-track"><div class="pc-buffered" id="pcBuffered"></div><div class="pc-played" id="pcPlayed"></div><div class="pc-thumb" id="pcThumb"></div></div>
+          <div class="pc-track">
+            <div class="pc-buffered" id="pcBuffered"></div>
+            <div class="pc-played" id="pcPlayed"></div>
+            <div class="pc-thumb" id="pcThumb"></div>
+          </div>
           <div class="pc-tooltip" id="pcTooltip">0:00</div>
           <input class="pc-range" id="pcSeek" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek video">
         </div>
         <div class="pc-controls">
           <div class="pc-left">
             <button class="pc-btn" id="pcPlay" aria-label="Play">▶</button>
-            <button class="pc-btn" id="pcBack" aria-label="Back 5 seconds">↶<small>5</small></button>
-            <button class="pc-btn" id="pcForward" aria-label="Forward 5 seconds">↷<small>5</small></button>
+            <button class="pc-btn" id="pcBack" aria-label="Back 10 seconds">↶<small>10</small></button>
+            <button class="pc-btn" id="pcForward" aria-label="Forward 10 seconds">↷<small>10</small></button>
             <span class="pc-time"><span id="pcCurrent">0:00</span> / <span id="pcDuration">0:00</span></span>
           </div>
           <div class="pc-spacer"></div>
@@ -875,27 +665,36 @@ footer {
             <select class="pc-select" id="pcQuality" aria-label="Video quality"><option value="-1">Quality: Auto</option></select>
             <select class="pc-select" id="pcSpeed" aria-label="Playback speed">
               <option value=".25">0.25×</option><option value=".5">0.5×</option><option value=".75">0.75×</option>
-              <option value="1" selected>1× Speed</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option>
+              <option value="1" selected>1× Speed</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option><option value="3">3×</option>
             </select>
             <div class="pc-settings-wrap">
               <button class="pc-btn" id="pcSettings" aria-label="Player settings">⚙</button>
               <div class="pc-settings-menu" id="pcSettingsMenu">
                 <div class="pc-menu-title">PLAYER OPTIONS</div>
+                <button class="pc-menu-row" id="pcRotate">Rotate Screen <span>↻</span></button>
                 <button class="pc-menu-row" id="pcPiP">Picture in Picture <span>↗</span></button>
+                <button class="pc-menu-row" id="pcLoopToggle">Loop: Off <span id="pcLoopIcon">↺</span></button>
+                <button class="pc-menu-row" id="pcMirrorToggle">Mirror Video <span>⇆</span></button>
                 <button class="pc-menu-row" id="pcReset">Reset preferences <span>↺</span></button>
               </div>
             </div>
+            <button class="pc-btn" id="pcDownloadBtn" aria-label="Download video" title="Download">⬇</button>
             <button class="pc-btn" id="pcFullscreen" aria-label="Fullscreen">⛶</button>
           </div>
         </div>
       </div>
-      <div class="hold-speed-indicator" id="holdSpeedIndicator"><span class="speed-pulse"></span><span>2.5× SPEED</span></div>
+
+      <div class="hold-speed-indicator" id="holdSpeedIndicator">
+        <span class="speed-pulse"></span>
+        <span id="holdSpeedLabel">2× SPEED</span>
+      </div>
+
       <div class="player-overlay" id="playerOverlay">
         <div class="loading-ring"></div>
         <div class="overlay-title">Loading video…</div>
         <div class="overlay-sub" id="overlaySubtitle">Connecting to CDN</div>
       </div>
-    </div>
+    </div><!-- /player-wrap -->
 
     <div class="watch-content">
       <div class="watch-main">
@@ -916,89 +715,171 @@ footer {
           <span class="method-chip" id="methodChip">—</span>
         </div>
         <button class="btn btn-ghost" id="copyUrlBtn" style="width:100%;margin-top:14px">Copy URL ↗</button>
+        <button class="btn btn-primary" id="srcDownloadBtn" style="width:100%;margin-top:8px">⬇ Download</button>
       </aside>
     </div>
   </div>
 </div>
 
-<!-- TOAST -->
+<!-- GLOBAL TOAST -->
 <div class="toast" id="toast"></div>
+
+<!-- DOWNLOAD MODAL -->
+<div class="dl-modal-bg" id="dlModalBg" role="dialog" aria-modal="true" aria-label="Download video">
+  <div class="dl-modal">
+    <div class="dl-modal-head">
+      <h3>⬇ Download Video</h3>
+      <button class="dl-close" id="dlClose" aria-label="Close">✕</button>
+    </div>
+    <div class="dl-row">
+      <div class="dl-label">FORMAT</div>
+      <select class="dl-select" id="dlFormat">
+        <option value="mp4">MP4 (H.264) — Universal</option>
+        <option value="webm">WebM (VP9) — Web optimised</option>
+        <option value="direct">Direct link (original)</option>
+      </select>
+    </div>
+    <div class="dl-row" id="dlQualityRow">
+      <div class="dl-label">QUALITY</div>
+      <select class="dl-select" id="dlQuality">
+        <option value="best">Best available</option>
+        <option value="1080">1080p</option>
+        <option value="720">720p</option>
+        <option value="480">480p</option>
+        <option value="360">360p</option>
+      </select>
+    </div>
+    <div class="dl-info" id="dlInfo">
+      Browser can download MP4/WebM files directly. For HLS streams or CORS-blocked sources, use the yt-dlp command below.
+    </div>
+    <div class="dl-row" id="dlCmdRow" style="display:none">
+      <div class="dl-label">YT-DLP COMMAND</div>
+      <div style="background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px;font:11px ui-monospace,monospace;color:#b8ff65;word-break:break-all;cursor:text;user-select:all" id="dlCmd"></div>
+    </div>
+    <div class="dl-progress" id="dlProgress">
+      <div class="dl-progress-bar"><div class="dl-progress-fill" id="dlProgressFill"></div></div>
+      <div class="dl-progress-text" id="dlProgressText">Preparing download…</div>
+    </div>
+    <div class="dl-actions">
+      <button class="btn btn-ghost" id="dlCopyCmd" style="display:none">Copy command</button>
+      <button class="btn dl-btn-primary" id="dlStart">Download ↓</button>
+    </div>
+  </div>
+</div>
 
 <script>
 (function () {
+  'use strict';
+
   /* ── CONFIG ── */
   const PROXY = 'https://jolly-poetry-a3ef.fnxturan.workers.dev';
   const STORAGE_KEY = 'frame_library_v2';
+  const SEEK_SECS = 10;        // double-tap seek amount
+  const HOLD_SPEED = 2;        // hold-to-speed multiplier
+  const HOLD_DELAY = 300;      // ms before hold activates
 
   /* ── ELEMENTS ── */
-  const viewLibrary = document.getElementById('view-library');
-  const viewWatch   = document.getElementById('view-watch');
-  const videoGrid   = document.getElementById('videoGrid');
-  const emptyState  = document.getElementById('emptyState');
-  const searchInput = document.getElementById('searchInput');
-  const statCount   = document.getElementById('statCount');
-  const libCount    = document.getElementById('libCount');
-  const badgeLabel  = document.getElementById('badgeLabel');
-  const toastEl     = document.getElementById('toast');
-
-  // watch elements
-  const player        = document.getElementById('player');
+  const viewLibrary  = document.getElementById('view-library');
+  const viewWatch    = document.getElementById('view-watch');
+  const videoGrid    = document.getElementById('videoGrid');
+  const emptyState   = document.getElementById('emptyState');
+  const searchInput  = document.getElementById('searchInput');
+  const statCount    = document.getElementById('statCount');
+  const libCount     = document.getElementById('libCount');
+  const badgeLabel   = document.getElementById('badgeLabel');
+  const toastEl      = document.getElementById('toast');
+  const player       = document.getElementById('player');
   const playerOverlay = document.getElementById('playerOverlay');
-  const overlaySubtitle = document.getElementById('overlaySubtitle');
-  const methodChip    = document.getElementById('methodChip');
-  const watchTitle    = document.getElementById('watchTitle');
-  const watchDesc     = document.getElementById('watchDesc');
-  const watchTags     = document.getElementById('watchTags');
-  const watchDate     = document.getElementById('watchDate');
-  const srcUrl        = document.getElementById('srcUrl');
+  const methodChip   = document.getElementById('methodChip');
+  const watchTitle   = document.getElementById('watchTitle');
+  const watchDesc    = document.getElementById('watchDesc');
+  const watchTags    = document.getElementById('watchTags');
+  const watchDate    = document.getElementById('watchDate');
+  const srcUrl       = document.getElementById('srcUrl');
+  const playerWrap   = document.getElementById('playerWrap');
+  const pcSettingsMenu = document.getElementById('pcSettingsMenu');
+  const pcToast      = document.getElementById('pcToast');
+  const pcSeek       = document.getElementById('pcSeek');
+  const pcQuality    = document.getElementById('pcQuality');
+  const pcSpeed      = document.getElementById('pcSpeed');
+  const holdInd      = document.getElementById('holdSpeedIndicator');
+  const holdLabel    = document.getElementById('holdSpeedLabel');
 
-  let videos = [];
-
-  let hlsInstance = null;
-  let hideControlsTimer = null;
-  let lastVolume = 1;
-  const playerWrap = document.querySelector('.player-wrap');
   const pc = id => document.getElementById(id);
-  const pcSeek = pc('pcSeek');
-  const pcQuality = pc('pcQuality');
-  const pcSpeed = pc('pcSpeed');
-  const pcSettingsMenu = pc('pcSettingsMenu');
-  const pcToast = pc('pcToast');
+
+  let videos      = [];
+  let hlsInstance = null;
+  let currentUrl  = '';
+  let hideCtrlTimer = null;
+  let rafId       = null;
+  let isMirrored  = false;
+  let isLooping   = false;
+
+  /* ── UTILS ── */
+  const esc = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt = n => {
     if (!Number.isFinite(n) || n < 0) n = 0;
-    const h = Math.floor(n / 3600), m = Math.floor((n % 3600) / 60), sec = Math.floor(n % 60);
-    return h ? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}` : `${m}:${String(sec).padStart(2,'0')}`;
+    const h = Math.floor(n / 3600), m = Math.floor((n % 3600) / 60), s = Math.floor(n % 60);
+    return h ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
   };
+
+  /* ── PLAYER TOAST ── */
   function playerToast(msg) {
-    pcToast.textContent = msg; pcToast.classList.add('show');
-    clearTimeout(playerToast.timer); playerToast.timer = setTimeout(() => pcToast.classList.remove('show'), 1500);
+    pcToast.textContent = msg;
+    pcToast.classList.add('show');
+    clearTimeout(playerToast._t);
+    playerToast._t = setTimeout(() => pcToast.classList.remove('show'), 1600);
   }
+
+  /* ── CONTROLS VISIBILITY ── */
   function showControls() {
     playerWrap.classList.remove('ui-hidden');
-    clearTimeout(hideControlsTimer);
-    if (!player.paused) hideControlsTimer = setTimeout(() => {
-      if (!pcSettingsMenu.classList.contains('open')) playerWrap.classList.add('ui-hidden');
-    }, 2600);
+    clearTimeout(hideCtrlTimer);
+    if (!player.paused) {
+      hideCtrlTimer = setTimeout(() => {
+        if (!pcSettingsMenu.classList.contains('open')) playerWrap.classList.add('ui-hidden');
+      }, 2800);
+    }
   }
-  function syncPlayState() {
-    const playing = !player.paused;
-    pc('pcPlay').textContent = playing ? 'Ⅱ' : '▶';
-    pc('pcPlay').setAttribute('aria-label', playing ? 'Pause' : 'Play');
-    pc('pcCenterPlay').textContent = playing ? 'Ⅱ' : '▶';
-    playerWrap.classList.toggle('playing', playing);
-    if (playing) showControls(); else { clearTimeout(hideControlsTimer); playerWrap.classList.remove('ui-hidden'); }
+
+  /* ── 60FPS RAF TIMELINE LOOP ── */
+  function rafLoop() {
+    syncTimeline();
+    rafId = requestAnimationFrame(rafLoop);
   }
+  function startRAF() {
+    if (!rafId) rafId = requestAnimationFrame(rafLoop);
+  }
+  function stopRAF() {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  }
+
   function syncTimeline() {
     const d = player.duration || 0, t = player.currentTime || 0;
-    pc('pcCurrent').textContent = fmt(t); pc('pcDuration').textContent = fmt(d);
+    pc('pcCurrent').textContent = fmt(t);
+    pc('pcDuration').textContent = fmt(d);
     const pct = d ? t / d * 100 : 0;
-    pc('pcPlayed').style.width = pct + '%'; pc('pcThumb').style.left = pct + '%';
+    // direct style writes — no transitions on these for jitter-free 60fps
+    pc('pcPlayed').style.width  = pct + '%';
+    pc('pcThumb').style.left    = pct + '%';
     if (!pcSeek.matches(':active')) pcSeek.value = d ? Math.round(t / d * 1000) : 0;
     if (player.buffered.length && d) {
       const end = player.buffered.end(player.buffered.length - 1);
       pc('pcBuffered').style.width = Math.min(100, end / d * 100) + '%';
     }
   }
+
+  function syncPlayState() {
+    const playing = !player.paused;
+    pc('pcPlay').textContent = playing ? 'Ⅱ' : '▶';
+    pc('pcPlay').setAttribute('aria-label', playing ? 'Pause' : 'Play');
+    pc('pcCenterPlay').textContent = playing ? 'Ⅱ' : '▶';
+    playerWrap.classList.toggle('playing', playing);
+    if (playing) { startRAF(); showControls(); }
+    else { stopRAF(); syncTimeline(); clearTimeout(hideCtrlTimer); playerWrap.classList.remove('ui-hidden'); }
+  }
+
+  /* ── SEEK FROM RANGE ── */
   function seekFromRange() {
     if (Number.isFinite(player.duration)) player.currentTime = Number(pcSeek.value) / 1000 * player.duration;
     showControls();
@@ -1010,88 +891,398 @@ footer {
     pc('pcCurrent').textContent = fmt(t);
     pc('pcTooltip').textContent = fmt(t);
     pc('pcTooltip').style.left = (pcSeek.value / 10) + '%';
+    pc('pcProgressWrap').classList.add('scrubbing');
   });
-  pcSeek.addEventListener('change', seekFromRange);
+  pcSeek.addEventListener('change', () => { seekFromRange(); pc('pcProgressWrap').classList.remove('scrubbing'); });
+  pcSeek.addEventListener('pointerdown', () => pc('pcProgressWrap').classList.add('scrubbing'));
+  pcSeek.addEventListener('pointerup', () => pc('pcProgressWrap').classList.remove('scrubbing'));
+
   pc('pcProgressWrap').addEventListener('pointermove', e => {
-    const r = pc('pcProgressWrap').getBoundingClientRect(), pct = Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
-    pc('pcTooltip').style.left = pct*100+'%'; pc('pcTooltip').textContent = fmt(pct*(player.duration||0));
+    const r = pc('pcProgressWrap').getBoundingClientRect(), pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+    pc('pcTooltip').style.left = pct * 100 + '%';
+    pc('pcTooltip').textContent = fmt(pct * (player.duration || 0));
   });
-  pc('pcPlay').addEventListener('click', () => player.paused ? player.play().catch(()=>{}) : player.pause());
-  pc('pcCenterPlay').addEventListener('click', () => player.paused ? player.play().catch(()=>{}) : player.pause());
-  pc('pcBack').addEventListener('click', () => { player.currentTime=Math.max(0,player.currentTime-5); showControls(); });
-  pc('pcForward').addEventListener('click', () => { player.currentTime=Math.min(player.duration||Infinity,player.currentTime+5); showControls(); });
-  pc('pcMute').addEventListener('click', () => { player.muted=!player.muted; syncVolume(); });
-  pc('pcVolume').addEventListener('input', () => { player.volume=Number(pc('pcVolume').value); player.muted=player.volume===0; syncVolume(); });
+
+  /* ── CONTROL BUTTONS ── */
+  pc('pcPlay').addEventListener('click', () => player.paused ? player.play().catch(() => {}) : player.pause());
+  pc('pcCenterPlay').addEventListener('click', () => player.paused ? player.play().catch(() => {}) : player.pause());
+  pc('pcBack').addEventListener('click', () => { player.currentTime = Math.max(0, player.currentTime - SEEK_SECS); showControls(); playerToast(`-${SEEK_SECS}s`); });
+  pc('pcForward').addEventListener('click', () => { player.currentTime = Math.min(player.duration || Infinity, player.currentTime + SEEK_SECS); showControls(); playerToast(`+${SEEK_SECS}s`); });
+  pc('pcMute').addEventListener('click', () => { player.muted = !player.muted; syncVolume(); });
+  pc('pcVolume').addEventListener('input', () => { player.volume = Number(pc('pcVolume').value); player.muted = player.volume === 0; syncVolume(); });
+
   function syncVolume() {
     pc('pcVolume').value = player.muted ? 0 : player.volume;
-    pc('pcMute').textContent = player.muted || player.volume===0 ? '◖×' : '◖))';
+    pc('pcMute').textContent = (player.muted || player.volume === 0) ? '◖×' : '◖))';
   }
-  pc('pcSpeed').addEventListener('change', () => { player.playbackRate=Number(pcSpeed.value); playerToast(`Playback speed ${pcSpeed.value}×`); });
+
+  pc('pcSpeed').addEventListener('change', () => { player.playbackRate = Number(pcSpeed.value); playerToast(`${pcSpeed.value}× speed`); });
   pc('pcQuality').addEventListener('change', () => {
-    if (!hlsInstance) { playerToast('Quality selection is available for HLS streams'); return; }
-    hlsInstance.currentLevel=Number(pcQuality.value);
-    playerToast(pcQuality.value==='-1' ? 'Quality: Auto' : `Quality: ${pcQuality.options[pcQuality.selectedIndex].text}`);
+    if (!hlsInstance) { playerToast('Quality: HLS streams only'); return; }
+    hlsInstance.currentLevel = Number(pcQuality.value);
+    playerToast(pcQuality.value === '-1' ? 'Quality: Auto' : `Quality: ${pcQuality.options[pcQuality.selectedIndex].text}`);
   });
+
   function updateQualities() {
-    pcQuality.innerHTML='<option value="-1">Quality: Auto</option>';
+    pcQuality.innerHTML = '<option value="-1">Quality: Auto</option>';
     if (!hlsInstance || !hlsInstance.levels.length) return;
-    const levels=hlsInstance.levels.map((l,i)=>({i,h:l.height||0,b:l.bitrate||0})).sort((a,b)=>b.h-a.h);
-    const seen=new Set();
-    levels.forEach(x=>{
-      const label=x.h ? `${x.h}p` : `${Math.round(x.b/1000)} kbps`;
-      if(seen.has(label)) return; seen.add(label);
-      const opt=document.createElement('option'); opt.value=x.i; opt.textContent=label; pcQuality.appendChild(opt);
+    const levels = hlsInstance.levels.map((l, i) => ({ i, h: l.height || 0, b: l.bitrate || 0 })).sort((a, b) => b.h - a.h);
+    const seen = new Set();
+    levels.forEach(x => {
+      const label = x.h ? `${x.h}p` : `${Math.round(x.b / 1000)} kbps`;
+      if (seen.has(label)) return; seen.add(label);
+      const opt = document.createElement('option'); opt.value = x.i; opt.textContent = label; pcQuality.appendChild(opt);
     });
   }
+
+  /* ── SETTINGS MENU ── */
   pc('pcSettings').addEventListener('click', e => { e.stopPropagation(); pcSettingsMenu.classList.toggle('open'); showControls(); });
+  document.addEventListener('click', e => { if (!e.target.closest('.pc-settings-wrap')) pcSettingsMenu.classList.remove('open'); });
+
+  /* PiP */
   pc('pcPiP').addEventListener('click', async () => {
     try {
       if (document.pictureInPictureElement) await document.exitPictureInPicture();
       else if (document.pictureInPictureEnabled && player.requestPictureInPicture) await player.requestPictureInPicture();
-      else playerToast('Picture in Picture is not supported here');
-    } catch { playerToast('Picture in Picture unavailable'); }
+      else playerToast('PiP not supported');
+    } catch { playerToast('PiP unavailable'); }
     pcSettingsMenu.classList.remove('open');
   });
-  pc('pcReset').addEventListener('click', () => {
-    player.playbackRate=1; pcSpeed.value='1'; player.volume=1; player.muted=false; syncVolume();
-    if(hlsInstance) hlsInstance.currentLevel=-1;
-    pcQuality.value='-1'; playerToast('Player preferences reset'); pcSettingsMenu.classList.remove('open');
+
+  /* Loop toggle */
+  pc('pcLoopToggle').addEventListener('click', () => {
+    isLooping = !isLooping;
+    player.loop = isLooping;
+    pc('pcLoopToggle').innerHTML = `Loop: ${isLooping ? 'On' : 'Off'} <span>${isLooping ? '🔁' : '↺'}</span>`;
+    playerToast(isLooping ? 'Loop on' : 'Loop off');
+    pcSettingsMenu.classList.remove('open');
   });
+
+  /* Mirror toggle */
+  pc('pcMirrorToggle').addEventListener('click', () => {
+    isMirrored = !isMirrored;
+    player.style.transform = isMirrored ? 'scaleX(-1)' : '';
+    playerToast(isMirrored ? 'Mirrored' : 'Mirror off');
+    pcSettingsMenu.classList.remove('open');
+  });
+
+  /* Rotate button */
+  let rotationDeg = 0;
+  pc('pcRotate').addEventListener('click', () => {
+    rotationDeg = (rotationDeg + 90) % 360;
+    // On mobile: request screen orientation if available
+    if (screen.orientation && screen.orientation.lock) {
+      const target = rotationDeg === 0 || rotationDeg === 180 ? 'portrait' : 'landscape';
+      screen.orientation.lock(target).catch(() => {});
+    }
+    // Visual rotate indicator
+    playerToast(`Rotate ${rotationDeg}°`);
+    // Try to toggle fullscreen landscape on mobile
+    if (rotationDeg === 90 || rotationDeg === 270) {
+      if (!document.fullscreenElement && playerWrap.requestFullscreen) {
+        playerWrap.requestFullscreen().then(() => {
+          if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(() => {});
+          }
+        }).catch(() => {});
+      }
+    } else if (rotationDeg === 0) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().then(() => {
+          if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+        }).catch(() => {});
+      }
+    }
+    pcSettingsMenu.classList.remove('open');
+  });
+
+  /* Reset */
+  pc('pcReset').addEventListener('click', () => {
+    player.playbackRate = 1; pcSpeed.value = '1';
+    player.volume = 1; player.muted = false; syncVolume();
+    player.loop = false; isLooping = false;
+    player.style.transform = ''; isMirrored = false;
+    if (hlsInstance) hlsInstance.currentLevel = -1;
+    pcQuality.value = '-1';
+    playerToast('Player reset'); pcSettingsMenu.classList.remove('open');
+    pc('pcLoopToggle').innerHTML = 'Loop: Off <span>↺</span>';
+  });
+
+  /* Fullscreen */
   pc('pcFullscreen').addEventListener('click', async () => {
     try {
-      if(document.fullscreenElement) await document.exitFullscreen();
-      else if(playerWrap.requestFullscreen) await playerWrap.requestFullscreen();
-      else if(player.webkitEnterFullscreen) player.webkitEnterFullscreen();
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else if (playerWrap.requestFullscreen) await playerWrap.requestFullscreen();
+      else if (player.webkitEnterFullscreen) player.webkitEnterFullscreen();
     } catch { playerToast('Fullscreen unavailable'); }
   });
-  document.addEventListener('fullscreenchange', () => pc('pcFullscreen').textContent=document.fullscreenElement?'⛶':'⛶');
-  playerWrap.addEventListener('pointermove', showControls);
-  playerWrap.addEventListener('pointerdown', e => { if(e.target===player) showControls(); });
-  player.addEventListener('click', () => { if(player.paused) player.play().catch(()=>{}); else showControls(); });
-  document.addEventListener('click', e => {
-    if(!e.target.closest('.pc-settings-wrap')) pcSettingsMenu.classList.remove('open');
+  document.addEventListener('fullscreenchange', () => {
+    pc('pcFullscreen').textContent = document.fullscreenElement ? '⊡' : '⛶';
+    pc('pcFullscreen').setAttribute('aria-label', document.fullscreenElement ? 'Exit fullscreen' : 'Fullscreen');
   });
-  ['timeupdate','durationchange','progress','loadedmetadata','seeked'].forEach(ev=>player.addEventListener(ev,syncTimeline));
-  player.addEventListener('play',syncPlayState); player.addEventListener('pause',syncPlayState);
-  player.addEventListener('volumechange',syncVolume);
-  player.addEventListener('waiting',()=>playerWrap.classList.add('buffering'));
-  player.addEventListener('playing',()=>playerWrap.classList.remove('buffering'));
-  player.addEventListener('canplay',()=>playerWrap.classList.remove('buffering'));
-  player.addEventListener('ended',()=>{playerWrap.classList.remove('ui-hidden');});
-  document.addEventListener('keydown', e => {
-    if(viewWatch.classList.contains('active') && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) {
-      if(e.code==='Space'){e.preventDefault();player.paused?player.play().catch(()=>{}):player.pause();}
-      else if(e.code==='ArrowLeft'){player.currentTime=Math.max(0,player.currentTime-5);showControls();}
-      else if(e.code==='ArrowRight'){player.currentTime=Math.min(player.duration||Infinity,player.currentTime+5);showControls();}
-      else if(e.key.toLowerCase()==='m'){player.muted=!player.muted;syncVolume();}
-      else if(e.key.toLowerCase()==='f'){pc('pcFullscreen').click();}
-      else if(e.key.toLowerCase()==='p'){pc('pcPiP').click();}
-      else if(e.key==='>'){player.playbackRate=Math.min(2,player.playbackRate+.25);pcSpeed.value=String(player.playbackRate);playerToast(`Speed ${player.playbackRate}×`);}
-      else if(e.key==='<'){player.playbackRate=Math.max(.25,player.playbackRate-.25);pcSpeed.value=String(player.playbackRate);playerToast(`Speed ${player.playbackRate}×`);}
+
+  /* ── POINTER / MOUSE EVENTS ── */
+  playerWrap.addEventListener('pointermove', showControls);
+
+  /* Single tap on video → play/pause; double-tap handled separately */
+  let tapTimer = null, tapCount = 0;
+  player.addEventListener('click', e => {
+    tapCount++;
+    if (tapCount === 1) {
+      tapTimer = setTimeout(() => {
+        tapCount = 0;
+        // single tap: show controls / pause-play toggle
+        if (player.paused) player.play().catch(() => {});
+        else showControls();
+      }, 220);
+    } else {
+      clearTimeout(tapTimer);
+      tapCount = 0;
     }
   });
+
+  /* ── DOUBLE-TAP SEEK (MOBILE) ── */
+  function showSeekRipple(side, secs) {
+    const ripple = side === 'left' ? pc('dblLeftRipple') : pc('dblRightRipple');
+    const label  = side === 'left' ? pc('dblLeftLabel') : pc('dblRightLabel');
+    label.textContent = secs > 0 ? `+${secs}s` : `${secs}s`;
+    ripple.classList.add('show');
+    clearTimeout(ripple._t);
+    ripple._t = setTimeout(() => ripple.classList.remove('show'), 600);
+  }
+
+  function setupDoubleTap(zoneEl, side, dir) {
+    let lastTap = 0;
+    let tapTimer2 = null;
+
+    zoneEl.addEventListener('pointerdown', e => {
+      // only process touch / pen (not mouse — mouse handled by player click)
+      if (e.pointerType === 'mouse') return;
+      e.stopPropagation();
+      const now = Date.now();
+      const delta = now - lastTap;
+      lastTap = now;
+      if (delta < 300 && delta > 0) {
+        // double tap
+        clearTimeout(tapTimer2);
+        const secs = dir * SEEK_SECS;
+        player.currentTime = Math.max(0, Math.min(player.duration || Infinity, player.currentTime + secs));
+        showSeekRipple(side, secs);
+        showControls();
+      } else {
+        // first tap — wait to see if second comes
+        tapTimer2 = setTimeout(() => {
+          // single tap: play/pause
+          player.paused ? player.play().catch(() => {}) : showControls();
+        }, 310);
+      }
+    });
+  }
+
+  setupDoubleTap(pc('dblLeft'), 'left', -1);
+  setupDoubleTap(pc('dblRight'), 'right', 1);
+
+  /* ── HOLD-TO-SPEED ── */
+  let holdTimer   = null;
+  let isHoldSpeed = false;
+  let prevRate    = 1;
+
+  function startHold() {
+    holdTimer = setTimeout(() => {
+      prevRate = player.playbackRate;
+      isHoldSpeed = true;
+      player.playbackRate = HOLD_SPEED;
+      holdLabel.textContent = `${HOLD_SPEED}× SPEED`;
+      holdInd.classList.add('show');
+      showControls();
+    }, HOLD_DELAY);
+  }
+  function endHold() {
+    clearTimeout(holdTimer);
+    if (isHoldSpeed) {
+      isHoldSpeed = false;
+      player.playbackRate = prevRate;
+      holdInd.classList.remove('show');
+    }
+  }
+
+  // Attach hold to the entire player area — both touch and mouse
+  playerWrap.addEventListener('pointerdown', e => {
+    // Skip if on a control button
+    if (e.target.closest('.pc-btn, .pc-range, .pc-volume, .pc-select, .pc-progress-wrap, .dbl-tap-zone')) return;
+    startHold();
+  });
+  playerWrap.addEventListener('pointerup', endHold);
+  playerWrap.addEventListener('pointerleave', endHold);
+  playerWrap.addEventListener('pointercancel', endHold);
+
+  /* ── KEYBOARD SHORTCUTS ── */
+  document.addEventListener('keydown', e => {
+    if (!viewWatch.classList.contains('active')) return;
+    if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+    switch (e.code) {
+      case 'Space':     e.preventDefault(); player.paused ? player.play().catch(() => {}) : player.pause(); break;
+      case 'ArrowLeft': e.preventDefault(); player.currentTime = Math.max(0, player.currentTime - SEEK_SECS); showControls(); break;
+      case 'ArrowRight':e.preventDefault(); player.currentTime = Math.min(player.duration || Infinity, player.currentTime + SEEK_SECS); showControls(); break;
+      case 'ArrowUp':   e.preventDefault(); player.volume = Math.min(1, player.volume + .1); syncVolume(); break;
+      case 'ArrowDown': e.preventDefault(); player.volume = Math.max(0, player.volume - .1); syncVolume(); break;
+    }
+    switch (e.key.toLowerCase()) {
+      case 'm': player.muted = !player.muted; syncVolume(); break;
+      case 'f': pc('pcFullscreen').click(); break;
+      case 'p': pc('pcPiP').click(); break;
+      case 'l': pc('pcLoopToggle').click(); break;
+      case '>': player.playbackRate = Math.min(3, player.playbackRate + .25); pcSpeed.value = String(player.playbackRate); playerToast(`${player.playbackRate}× speed`); break;
+      case '<': player.playbackRate = Math.max(.25, player.playbackRate - .25); pcSpeed.value = String(player.playbackRate); playerToast(`${player.playbackRate}× speed`); break;
+    }
+  });
+
+  /* ── PLAYER EVENTS ── */
+  player.addEventListener('play', syncPlayState);
+  player.addEventListener('pause', syncPlayState);
+  player.addEventListener('volumechange', syncVolume);
+  player.addEventListener('waiting', () => playerWrap.classList.add('buffering'));
+  player.addEventListener('playing', () => playerWrap.classList.remove('buffering'));
+  player.addEventListener('canplay', () => playerWrap.classList.remove('buffering'));
+  player.addEventListener('ended', () => { stopRAF(); playerWrap.classList.remove('ui-hidden'); });
+  player.addEventListener('loadedmetadata', syncTimeline);
+  player.addEventListener('durationchange', syncTimeline);
+  player.addEventListener('seeked', syncTimeline);
+
   syncVolume();
 
+  /* ── DOWNLOAD MODAL ── */
+  const dlModalBg  = document.getElementById('dlModalBg');
+  const dlFormat   = document.getElementById('dlFormat');
+  const dlQuality  = document.getElementById('dlQuality');
+  const dlInfo     = document.getElementById('dlInfo');
+  const dlCmd      = document.getElementById('dlCmd');
+  const dlCmdRow   = document.getElementById('dlCmdRow');
+  const dlCopyCmd  = document.getElementById('dlCopyCmd');
+  const dlStart    = document.getElementById('dlStart');
+  const dlProgress = document.getElementById('dlProgress');
+  const dlProgressFill = document.getElementById('dlProgressFill');
+  const dlProgressText = document.getElementById('dlProgressText');
+
+  function buildYtdlpCmd() {
+    const url     = currentUrl || srcUrl.textContent || '';
+    const fmt     = dlFormat.value;
+    const quality = dlQuality.value;
+    const title   = watchTitle.textContent || 'video';
+    if (!url) return '';
+    let fmtStr = '';
+    if (fmt === 'mp4') {
+      fmtStr = quality === 'best'
+        ? `-f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best"`
+        : `-f "bestvideo[height<=${quality}][ext=mp4]+bestaudio[ext=m4a]/best[height<=${quality}][ext=mp4]/best[height<=${quality}]"`;
+    } else if (fmt === 'webm') {
+      fmtStr = quality === 'best'
+        ? `-f "bestvideo[ext=webm]+bestaudio[ext=webm]/best[ext=webm]/best"`
+        : `-f "bestvideo[height<=${quality}][ext=webm]+bestaudio/best[height<=${quality}]"`;
+    } else {
+      fmtStr = `-f best`;
+    }
+    return `yt-dlp ${fmtStr} -o "${title.replace(/[^\w\s-]/g,'')}.%(ext)s" "${url}"`;
+  }
+
+  function updateDlUI() {
+    const isHLS = currentUrl && currentUrl.split('?')[0].toLowerCase().endsWith('.m3u8');
+    const fmt = dlFormat.value;
+    if (isHLS || fmt === 'direct') {
+      dlInfo.innerHTML = isHLS
+        ? `HLS streams can't be fetched directly by the browser. Use the yt-dlp command below.`
+        : `Browser will attempt a direct download of the original file.`;
+      dlCmdRow.style.display = isHLS ? 'flex' : 'none';
+      dlCopyCmd.style.display = isHLS ? 'inline-flex' : 'none';
+      dlCmd.textContent = isHLS ? buildYtdlpCmd() : '';
+      dlStart.textContent = isHLS ? 'Open in yt-dlp' : 'Download ↓';
+    } else {
+      dlInfo.innerHTML = `Browser will try to download this file. If the CDN blocks it, copy the yt-dlp command below as fallback.<br><br><code>${buildYtdlpCmd()}</code>`;
+      dlCmdRow.style.display = 'none';
+      dlCopyCmd.style.display = 'none';
+      dlStart.textContent = 'Download ↓';
+    }
+  }
+
+  dlFormat.addEventListener('change', updateDlUI);
+  dlQuality.addEventListener('change', updateDlUI);
+
+  function openDlModal() {
+    dlProgress.style.display = 'none';
+    dlProgressFill.style.width = '0';
+    updateDlUI();
+    dlModalBg.classList.add('open');
+  }
+  pc('pcDownloadBtn').addEventListener('click', openDlModal);
+  pc('srcDownloadBtn').addEventListener('click', openDlModal);
+  document.getElementById('dlClose').addEventListener('click', () => dlModalBg.classList.remove('open'));
+  dlModalBg.addEventListener('click', e => { if (e.target === dlModalBg) dlModalBg.classList.remove('open'); });
+
+  dlCopyCmd.addEventListener('click', async () => {
+    const cmd = buildYtdlpCmd();
+    try {
+      await navigator.clipboard.writeText(cmd);
+      toast('Command copied.');
+    } catch {
+      dlCmd.select && dlCmd.select();
+      toast('Select and copy manually.');
+    }
+  });
+
+  dlStart.addEventListener('click', async () => {
+    const url = currentUrl || srcUrl.textContent || '';
+    if (!url) { toast('No video URL loaded.'); return; }
+    const isHLS = url.split('?')[0].toLowerCase().endsWith('.m3u8');
+    if (isHLS) {
+      const cmd = buildYtdlpCmd();
+      try { await navigator.clipboard.writeText(cmd); toast('yt-dlp command copied.'); } catch { toast('Copy the command manually.'); }
+      return;
+    }
+    // Try direct blob download
+    dlProgress.style.display = 'block';
+    dlProgressText.textContent = 'Connecting…';
+    dlProgressFill.style.width = '5%';
+    dlStart.disabled = true;
+    try {
+      const proxyTarget = PROXY + '/proxy?url=' + encodeURIComponent(url);
+      const resp = await fetch(proxyTarget);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const total = Number(resp.headers.get('content-length')) || 0;
+      const reader = resp.body.getReader();
+      let loaded = 0;
+      const chunks = [];
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value); loaded += value.length;
+        if (total) {
+          const pct = Math.round(loaded / total * 100);
+          dlProgressFill.style.width = pct + '%';
+          dlProgressText.textContent = `Downloading… ${pct}%`;
+        } else {
+          dlProgressText.textContent = `Downloading… ${(loaded / 1024 / 1024).toFixed(1)} MB`;
+        }
+      }
+      const blob = new Blob(chunks);
+      const ext  = dlFormat.value === 'webm' ? 'webm' : 'mp4';
+      const name = (watchTitle.textContent || 'video').replace(/[^\w\s-]/g, '') + '.' + ext;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      dlProgressFill.style.width = '100%';
+      dlProgressText.textContent = 'Download complete!';
+      setTimeout(() => { dlProgress.style.display = 'none'; dlModalBg.classList.remove('open'); }, 1200);
+    } catch (err) {
+      dlProgressText.textContent = `Failed: ${err.message}. Try the yt-dlp command.`;
+      dlCmdRow.style.display = 'flex';
+      dlCmd.textContent = buildYtdlpCmd();
+      dlCopyCmd.style.display = 'inline-flex';
+    } finally {
+      dlStart.disabled = false;
+    }
+  });
 
   /* ── STORAGE ── */
   function load() {
@@ -1110,11 +1301,6 @@ footer {
     toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2400);
   }
 
-  /* ── HTML ESCAPE ── */
-  function esc(s = '') {
-    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-
   /* ── ROUTING ── */
   function showLibrary() {
     viewLibrary.classList.add('active');
@@ -1123,46 +1309,33 @@ footer {
     stopVideo();
     render();
   }
-
   function showWatch(id) {
     viewLibrary.classList.remove('active');
     viewWatch.classList.add('active');
     badgeLabel.innerHTML = '<i></i> NOW PLAYING';
     loadVideo(id);
   }
-
   function route() {
     const hash = location.hash;
-    if (hash.startsWith('#watch=')) {
-      showWatch(decodeURIComponent(hash.slice(7)));
-    } else {
-      showLibrary();
-    }
+    if (hash.startsWith('#watch=')) showWatch(decodeURIComponent(hash.slice(7)));
+    else showLibrary();
   }
-
   window.addEventListener('hashchange', route);
   document.getElementById('brandBtn').addEventListener('click', () => { location.hash = ''; });
   document.getElementById('backBtn').addEventListener('click', () => { location.hash = ''; });
 
   /* ── THEME ── */
   function applyTheme(t) {
-    if (t === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else if (t === 'light') {
-      document.documentElement.setAttribute('data-theme', 'light');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-    }
+    if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    else if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
     try { localStorage.setItem('frame_theme', t || 'system'); } catch {}
   }
   document.getElementById('themeBtn').addEventListener('click', () => {
     const cur = document.documentElement.getAttribute('data-theme') || 'dark';
     applyTheme(cur === 'dark' ? 'light' : 'dark');
   });
-  try {
-    const saved = localStorage.getItem('frame_theme');
-    if (saved) applyTheme(saved);
-  } catch {}
+  try { const s = localStorage.getItem('frame_theme'); if (s) applyTheme(s); } catch {}
 
   /* ── RENDER LIBRARY ── */
   function render() {
@@ -1176,11 +1349,9 @@ footer {
     if (!filtered.length) {
       videoGrid.innerHTML = '';
       emptyState.hidden = false;
-      if (q) {
-        emptyState.innerHTML = '<div class="empty-icon">⌕</div><h3>No matches.</h3><p>Try a different title or tag.</p>';
-      } else {
-        emptyState.innerHTML = '<div class="empty-icon">▧</div><h3>Library is empty.</h3><p>Add your first video above — it shows up here instantly.</p>';
-      }
+      emptyState.innerHTML = q
+        ? '<div class="empty-icon">⌕</div><h3>No matches.</h3><p>Try a different title or tag.</p>'
+        : '<div class="empty-icon">▧</div><h3>Library is empty.</h3><p>Add your first video above — it shows up here instantly.</p>';
       return;
     }
 
@@ -1188,9 +1359,7 @@ footer {
     videoGrid.innerHTML = filtered.map(v => `
       <article class="video-card" data-id="${esc(v.id)}">
         <div class="thumb">
-          ${v.thumbnail
-            ? `<img src="${esc(v.thumbnail)}" alt="" loading="lazy" onerror="this.remove()">`
-            : `<div class="thumb-placeholder">▧</div>`}
+          ${v.thumbnail ? `<img src="${esc(v.thumbnail)}" alt="" loading="lazy" onerror="this.remove()">` : `<div class="thumb-placeholder">▧</div>`}
           <span class="play-chip">▶</span>
         </div>
         <div class="card-body">
@@ -1209,134 +1378,71 @@ footer {
     `).join('');
   }
 
-
-  /* ── JSON BULK IMPORT: [ { title, tags, thumbnail, videoLink }, ... ] ── */
-  const jsonInput = document.getElementById('jsonImportInput');
+  /* ── JSON IMPORT ── */
+  const jsonInput  = document.getElementById('jsonImportInput');
   const jsonStatus = document.getElementById('jsonImportStatus');
 
-  function setImportStatus(message, type) {
+  function setImportStatus(msg, type) {
     jsonStatus.className = 'import-status' + (type ? ' ' + type : '');
-    jsonStatus.textContent = message;
+    jsonStatus.textContent = msg;
   }
 
   document.getElementById('downloadJsonTemplate').addEventListener('click', () => {
-    const sample = [{
-      title: "Example video",
-      tags: ["gaming", "tutorial"],
-      thumbnail: "https://example.com/thumbnail.jpg",
-      videoLink: "https://example.com/video.mp4"
-    }];
+    const sample = [{ title: "Example video", tags: ["gaming","tutorial"], thumbnail: "https://example.com/thumbnail.jpg", videoLink: "https://example.com/video.mp4" }];
     const blob = new Blob([JSON.stringify(sample, null, 2)], { type: 'application/json' });
-    const objectUrl = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = objectUrl;
-    link.download = 'frame-videos-sample.json';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'frame-videos-sample.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   });
 
   jsonInput.addEventListener('change', async () => {
     const file = jsonInput.files && jsonInput.files[0];
     if (!file) return;
-
     setImportStatus(`Selected: ${file.name}. Reading file…`, '');
     try {
       const rawText = await file.text();
       let parsed;
-      try {
-        parsed = JSON.parse(rawText.replace(/^\uFEFF/, ''));
-      } catch (parseError) {
-        throw new Error(`JSON syntax error: ${parseError.message}`);
-      }
-
-      const rows = Array.isArray(parsed)
-        ? parsed
-        : (parsed && Array.isArray(parsed.videos) ? parsed.videos : null);
-      if (!rows) throw new Error('Expected a JSON array: [ {...}, {...} ].');
-      if (!rows.length) throw new Error('The JSON video list is empty.');
-
-      const imported = [];
-      const issues = [];
-
-      rows.forEach((item, index) => {
-        const n = index + 1;
-        if (!item || typeof item !== 'object' || Array.isArray(item)) {
-          issues.push(`Entry ${n}: invalid video object.`);
-          return;
-        }
-
+      try { parsed = JSON.parse(rawText.replace(/^\uFEFF/, '')); }
+      catch (e) { throw new Error(`JSON syntax error: ${e.message}`); }
+      const rows = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.videos) ? parsed.videos : null);
+      if (!rows) throw new Error('Expected a JSON array.');
+      if (!rows.length) throw new Error('The JSON list is empty.');
+      const imported = [], issues = [];
+      rows.forEach((item, i) => {
+        const n = i + 1;
+        if (!item || typeof item !== 'object' || Array.isArray(item)) { issues.push(`Entry ${n}: invalid.`); return; }
         const title = typeof item.title === 'string' ? item.title.trim() : '';
-        const videoLink = typeof item.videoLink === 'string' ? item.videoLink.trim() : '';
+        const videoLink = typeof item.videoLink === 'string' ? item.videoLink.trim()
+          : typeof item.url === 'string' ? item.url.trim()
+          : typeof item.videoUrl === 'string' ? item.videoUrl.trim() : '';
         if (!title) { issues.push(`Entry ${n}: title missing.`); return; }
         if (!videoLink) { issues.push(`Entry ${n}: videoLink missing.`); return; }
-
-        try {
-          const u = new URL(videoLink);
-          if (!['http:', 'https:'].includes(u.protocol)) throw new Error('HTTP/HTTPS only');
-        } catch (e) {
-          issues.push(`Entry ${n}: invalid videoLink (${e.message}).`);
-          return;
-        }
-
+        try { const u = new URL(videoLink); if (!['http:','https:'].includes(u.protocol)) throw new Error('HTTP/HTTPS only'); }
+        catch (e) { issues.push(`Entry ${n}: invalid videoLink.`); return; }
         let tags = [];
         if (Array.isArray(item.tags)) tags = item.tags.map(x => String(x).trim()).filter(Boolean);
         else if (typeof item.tags === 'string') tags = item.tags.split(',').map(x => x.trim()).filter(Boolean);
-        else if (item.tags != null) issues.push(`Entry ${n}: tags should be an array; imported empty.`);
-
         const thumbnail = typeof item.thumbnail === 'string' ? item.thumbnail.trim() : '';
         let safeThumbnail = '';
-        if (thumbnail) {
-          try {
-            const t = new URL(thumbnail);
-            if (!['http:', 'https:'].includes(t.protocol)) throw new Error();
-            safeThumbnail = thumbnail;
-          } catch {
-            issues.push(`Entry ${n}: invalid thumbnail URL ignored.`);
-          }
-        }
-
-        imported.push({
-          id: (window.crypto && crypto.randomUUID)
-            ? crypto.randomUUID()
-            : `import-${Date.now()}-${n}-${Math.random().toString(36).slice(2)}`,
-          title,
-          description: String(item.description || '').trim(),
-          tags,
-          url: videoLink,
-          thumbnail: safeThumbnail,
-          createdAt: new Date().toISOString()
-        });
+        if (thumbnail) { try { const t = new URL(thumbnail); if (['http:','https:'].includes(t.protocol)) safeThumbnail = thumbnail; } catch {} }
+        imported.push({ id: crypto.randomUUID ? crypto.randomUUID() : `import-${Date.now()}-${n}`, title, description: String(item.description || '').trim(), tags, url: videoLink, thumbnail: safeThumbnail, createdAt: new Date().toISOString() });
       });
-
-      if (!imported.length) {
-        throw new Error(`No valid videos found. ${issues.slice(0, 5).join(' ')}`);
-      }
-
-      const oldVideos = videos.slice();
+      if (!imported.length) throw new Error(`No valid videos. ${issues.slice(0,5).join(' ')}`);
+      const old = videos.slice();
       videos = imported.concat(videos);
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(videos));
-      } catch (storageError) {
-        videos = oldVideos;
-        render();
-        throw new Error(`Could not save videos in browser storage (possibly full): ${storageError.message}`);
-      }
-
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(videos)); }
+      catch (e) { videos = old; render(); throw new Error(`Storage full: ${e.message}`); }
       render();
+      let msg = `SUCCESS: ${imported.length}/${rows.length} videos imported.`;
       const skipped = rows.length - imported.length;
-      let message = `SUCCESS: ${imported.length}/${rows.length} videos imported.`;
-      if (skipped) message += ` ${skipped} entries skipped.`;
-      if (issues.length) message += ` Details: ${issues.slice(0, 5).join(' | ')}`;
-      setImportStatus(message, 'ok');
+      if (skipped) msg += ` ${skipped} skipped.`;
+      if (issues.length) msg += ` ${issues.slice(0,3).join(' | ')}`;
+      setImportStatus(msg, 'ok');
       toast(`${imported.length} videos imported.`);
-    } catch (error) {
-      setImportStatus(`IMPORT FAILED: ${error.message || 'Unknown error.'}`, 'err');
-      console.error('[FRAME JSON Import]', error);
-    } finally {
-      jsonInput.value = '';
-    }
+    } catch (err) {
+      setImportStatus(`IMPORT FAILED: ${err.message}`, 'err');
+    } finally { jsonInput.value = ''; }
   });
 
   /* ── GRID EVENTS ── */
@@ -1344,134 +1450,90 @@ footer {
     const watchBtn = e.target.closest('[data-watch]');
     const delBtn   = e.target.closest('[data-del]');
     const card     = e.target.closest('[data-id]');
-
-    if (watchBtn) {
-      location.hash = '#watch=' + encodeURIComponent(watchBtn.dataset.watch);
-      return;
-    }
-    if (delBtn) {
-      videos = videos.filter(v => v.id !== delBtn.dataset.del);
-      save(); render(); toast('Video removed.');
-      return;
-    }
-    if (card && !e.target.closest('button')) {
-      location.hash = '#watch=' + encodeURIComponent(card.dataset.id);
-    }
+    if (watchBtn) { location.hash = '#watch=' + encodeURIComponent(watchBtn.dataset.watch); return; }
+    if (delBtn) { videos = videos.filter(v => v.id !== delBtn.dataset.del); save(); render(); toast('Video removed.'); return; }
+    if (card && !e.target.closest('button')) location.hash = '#watch=' + encodeURIComponent(card.dataset.id);
   });
 
   searchInput.addEventListener('input', render);
 
   document.getElementById('clearAllBtn').addEventListener('click', () => {
     if (!videos.length) return;
-    if (confirm('Delete every video from your local library?')) {
-      videos = []; save(); render(); toast('Library cleared.');
-    }
+    if (confirm('Delete every video from your local library?')) { videos = []; save(); render(); toast('Library cleared.'); }
   });
 
   /* ── FORM SUBMIT ── */
   document.getElementById('videoForm').addEventListener('submit', e => {
     e.preventDefault();
     const v = {
-      id:          crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
-      title:       document.getElementById('fTitle').value.trim(),
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+      title: document.getElementById('fTitle').value.trim(),
       description: document.getElementById('fDesc').value.trim(),
-      tags:        document.getElementById('fTags').value.split(',').map(x => x.trim()).filter(Boolean),
-      url:         document.getElementById('fUrl').value.trim(),
-      thumbnail:   document.getElementById('fThumb').value.trim(),
-      createdAt:   new Date().toISOString(),
+      tags: document.getElementById('fTags').value.split(',').map(x => x.trim()).filter(Boolean),
+      url: document.getElementById('fUrl').value.trim(),
+      thumbnail: document.getElementById('fThumb').value.trim(),
+      createdAt: new Date().toISOString(),
     };
-    videos.unshift(v);
-    save();
-    e.target.reset();
-    render();
-    toast('Video added to library.');
+    videos.unshift(v); save(); e.target.reset(); render(); toast('Video added.');
   });
 
   /* ── VIDEO PLAYER ── */
-  function proxyUrl(url) {
-    return PROXY + '/proxy?url=' + encodeURIComponent(url);
-  }
+  function proxyUrl(url) { return PROXY + '/proxy?url=' + encodeURIComponent(url); }
+  function isHLS(url) { return url.split('?')[0].toLowerCase().endsWith('.m3u8'); }
 
-  function isHLS(url) {
-    return url.split('?')[0].toLowerCase().endsWith('.m3u8');
-  }
-
-  function setOverlay(icon, title, sub, showSpinner) {
+  function setOverlay(icon, title, sub, spinner) {
     playerOverlay.classList.remove('hidden');
-    playerOverlay.innerHTML = (showSpinner ? '<div class="loading-ring"></div>' : `<div class="overlay-icon">${icon}</div>`)
+    playerOverlay.innerHTML = (spinner ? '<div class="loading-ring"></div>' : `<div class="overlay-icon">${icon}</div>`)
       + `<div class="overlay-title">${title}</div>`
       + (sub ? `<div class="overlay-sub">${sub}</div>` : '');
   }
-
-  function hideOverlay() {
-    playerOverlay.classList.add('hidden');
-  }
-
+  function hideOverlay() { playerOverlay.classList.add('hidden'); }
   function setMethod(label, state) {
     methodChip.textContent = label;
     methodChip.className = 'method-chip ' + (state || '');
   }
 
   function stopVideo() {
+    stopRAF();
     player.pause();
     if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
-    player.removeAttribute('src');
-    player.load();
-    pcQuality.innerHTML='<option value="-1">Quality: Auto</option>';
+    player.removeAttribute('src'); player.load();
+    currentUrl = '';
+    pcQuality.innerHTML = '<option value="-1">Quality: Auto</option>';
     playerWrap.classList.remove('buffering','ui-hidden','playing');
     setMethod('—', '');
     playerOverlay.classList.remove('hidden');
     playerOverlay.innerHTML = '<div class="overlay-icon">▧</div><div class="overlay-title">No video loaded</div>';
+    // reset mirror/rotate on stop
+    player.style.transform = ''; isMirrored = false;
   }
 
   async function loadVideo(id) {
     load();
     const v = videos.find(v => v.id === id);
-    if (!v) {
-      setOverlay('⚠', 'Video not found', 'It may have been removed from this browser.', false);
-      return;
-    }
-
-    // fill metadata
-    watchTitle.textContent  = v.title;
-    watchDesc.textContent   = v.description || '';
-    watchDate.textContent   = new Date(v.createdAt).toLocaleDateString();
-    srcUrl.textContent      = v.url;
-    watchTags.innerHTML     = (v.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
-    if (v.thumbnail) player.setAttribute('poster', v.thumbnail);
-    else player.removeAttribute('poster');
-
+    if (!v) { setOverlay('⚠', 'Video not found', 'It may have been removed from this browser.', false); return; }
+    watchTitle.textContent = v.title;
+    watchDesc.textContent  = v.description || '';
+    watchDate.textContent  = new Date(v.createdAt).toLocaleDateString();
+    srcUrl.textContent     = v.url;
+    currentUrl             = v.url;
+    watchTags.innerHTML    = (v.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
+    if (v.thumbnail) player.setAttribute('poster', v.thumbnail); else player.removeAttribute('poster');
     setOverlay('', 'Loading video…', 'Connecting to CDN', true);
     setMethod('trying direct…', '');
-    pcQuality.innerHTML='<option value="-1">Quality: Auto</option>';
+    pcQuality.innerHTML = '<option value="-1">Quality: Auto</option>';
     playerWrap.classList.remove('buffering','ui-hidden');
     if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
-    if (isHLS(v.url) && window.Hls && Hls.isSupported()) {
-      tryHLS(v.url, 'HLS.js direct');
-      return;
-    }
-    /* ── Strategy 1: direct ── */
+
+    if (isHLS(v.url) && window.Hls && Hls.isSupported()) { tryHLS(v.url, 'HLS.js direct'); return; }
     const directOk = await tryDirect(v.url);
     if (directOk) return;
-
-    /* ── Strategy 2: proxy direct ── */
     setOverlay('', 'Applying proxy…', 'CORS blocked — routing through Cloudflare Worker', true);
     setMethod('proxy…', '');
-
-    if (isHLS(v.url)) {
-      tryHLS(proxyUrl(v.url), 'HLS via proxy');
-      return;
-    }
-
+    if (isHLS(v.url)) { tryHLS(proxyUrl(v.url), 'HLS via proxy'); return; }
     const proxyOk = await tryDirect(proxyUrl(v.url));
     if (proxyOk) { setMethod('proxy', 'ok'); return; }
-
-    /* ── Strategy 3: HLS.js fallback ── */
-    if (window.Hls && Hls.isSupported()) {
-      tryHLS(proxyUrl(v.url), 'HLS.js via proxy');
-      return;
-    }
-
+    if (window.Hls && Hls.isSupported()) { tryHLS(proxyUrl(v.url), 'HLS.js via proxy'); return; }
     setOverlay('⚠', 'Playback failed', 'CDN is blocking this video from loading in the browser.', false);
     setMethod('failed', 'err');
   }
@@ -1481,7 +1543,8 @@ footer {
       let settled = false;
       const finish = ok => {
         if (settled) return; settled = true; clearTimeout(timer);
-        player.removeEventListener('canplay', onReady); player.removeEventListener('error', onErr);
+        player.removeEventListener('canplay', onReady);
+        player.removeEventListener('error', onErr);
         resolve(ok);
       };
       const onReady = () => {
@@ -1490,45 +1553,30 @@ footer {
       };
       const onErr = () => finish(false);
       const timer = setTimeout(() => finish(false), 12000);
-      player.addEventListener('canplay', onReady, { once:true });
-      player.addEventListener('error', onErr, { once:true });
+      player.addEventListener('canplay', onReady, { once: true });
+      player.addEventListener('error', onErr, { once: true });
       player.src = url; player.load();
     });
   }
 
   function tryHLS(url, label) {
     if (!window.Hls || !Hls.isSupported()) {
-      // Native HLS (Safari and supported mobile browsers)
       player.src = url;
-      player.addEventListener('canplay', () => {
-        hideOverlay(); setMethod(label, 'ok'); player.play().catch(() => {});
-      }, { once:true });
-      player.addEventListener('error', () => {
-        setOverlay('⚠', 'HLS load failed', 'Check the stream URL.', false);
-        setMethod('failed', 'err');
-      }, { once:true });
-      player.load();
-      return;
+      player.addEventListener('canplay', () => { hideOverlay(); setMethod(label, 'ok'); player.play().catch(() => {}); }, { once: true });
+      player.addEventListener('error', () => { setOverlay('⚠', 'HLS load failed', 'Check stream URL.', false); setMethod('failed', 'err'); }, { once: true });
+      player.load(); return;
     }
     if (hlsInstance) hlsInstance.destroy();
-    hlsInstance = new Hls({ enableWorker:true, capLevelToPlayerSize:true, startLevel:-1, maxBufferLength:30 });
+    hlsInstance = new Hls({ enableWorker: true, capLevelToPlayerSize: true, startLevel: -1, maxBufferLength: 30, maxMaxBufferLength: 60 });
     hlsInstance.loadSource(url);
     hlsInstance.attachMedia(player);
-    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-      updateQualities(); hideOverlay(); setMethod(label, 'ok'); player.play().catch(() => {});
-    });
-    hlsInstance.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
-      const level=hlsInstance.levels[data.level];
-      if(level && level.height) playerToast(`Playing ${level.height}p`);
-    });
+    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => { updateQualities(); hideOverlay(); setMethod(label, 'ok'); player.play().catch(() => {}); });
+    hlsInstance.on(Hls.Events.LEVEL_SWITCHED, (_, data) => { const l = hlsInstance.levels[data.level]; if (l && l.height) playerToast(`${l.height}p`); });
     hlsInstance.on(Hls.Events.ERROR, (_, data) => {
       if (data.fatal) {
-        if(data.type===Hls.ErrorTypes.NETWORK_ERROR) hlsInstance.startLoad();
-        else if(data.type===Hls.ErrorTypes.MEDIA_ERROR) hlsInstance.recoverMediaError();
-        else {
-          setOverlay('⚠', 'HLS stream error', data.details || 'Stream could not be parsed.', false);
-          setMethod('failed', 'err');
-        }
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) hlsInstance.startLoad();
+        else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hlsInstance.recoverMediaError();
+        else { setOverlay('⚠', 'HLS stream error', data.details || 'Stream could not be parsed.', false); setMethod('failed', 'err'); }
       }
     });
   }
@@ -1537,17 +1585,8 @@ footer {
   document.getElementById('copyUrlBtn').addEventListener('click', async () => {
     const url = srcUrl.textContent;
     if (!url) return;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast('URL copied.');
-    } catch {
-      // fallback select
-      const range = document.createRange();
-      range.selectNodeContents(srcUrl);
-      const sel = window.getSelection();
-      sel.removeAllRanges(); sel.addRange(range);
-      toast('Select and copy manually.');
-    }
+    try { await navigator.clipboard.writeText(url); toast('URL copied.'); }
+    catch { const r = document.createRange(); r.selectNodeContents(srcUrl); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); toast('Select and copy manually.'); }
   });
 
   /* ── BOOT ── */
@@ -1555,5 +1594,4 @@ footer {
   route();
 })();
 </script>
-
 </body></html>
