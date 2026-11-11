@@ -497,7 +497,7 @@ footer { border-top: 1px solid var(--line); padding: 22px 0 28px; display: flex;
     <section class="hero">
       <div class="eyebrow"><span class="eyebrow-line"></span> YOUR PERSONAL VIDEO CMS</div>
       <h1>Build your own<br><em>video universe.</em></h1>
-      <p class="hero-copy">Drop CDN links, add metadata, and watch every video with a proper player. No database. No backend. Proxy-powered to beat CORS.</p>
+      <p class="hero-copy">Add direct MP4 or HLS links, organize your collection, and watch with a custom player. Your library stays in this browser.</p>
       <div class="hero-stats">
         <div><strong id="statCount">0</strong><span>VIDEOS ADDED</span></div>
         <div><strong>100%</strong><span>LOCAL STORAGE</span></div>
@@ -605,7 +605,7 @@ footer { border-top: 1px solid var(--line); padding: 22px 0 28px; display: flex;
 
     <footer>
       <span>FRAME<span class="brand-dot">.</span> VIDEO STUDIO</span>
-      <span>PROXY: jolly-poetry-a3ef.fnxturan.workers.dev</span>
+      <span>HTML5 VIDEO PLAYER</span>
     </footer>
   </div>
 </div>
@@ -619,7 +619,7 @@ footer { border-top: 1px solid var(--line); padding: 22px 0 28px; display: flex;
     </div>
 
     <div class="player-wrap" id="playerWrap">
-      <video id="player" playsinline webkit-playsinline preload="metadata"></video>
+      <video id="player" playsinline webkit-playsinline preload="auto" referrerpolicy="no-referrer"></video>
 
       <!-- Double-tap zones (mobile) -->
       <div class="dbl-tap-zone left" id="dblLeft">
@@ -1478,7 +1478,9 @@ footer { border-top: 1px solid var(--line); padding: 22px 0 28px; display: flex;
   });
 
   /* ── VIDEO PLAYER ── */
-  function proxyUrl(url) { return PROXY + '/proxy?url=' + encodeURIComponent(url); }
+  function proxyUrl(url) {
+    return PROXY + '/proxy?url=' + encodeURIComponent(url);
+  }
   function isHLS(url) { return url.split('?')[0].toLowerCase().endsWith('.m3u8'); }
 
   function setOverlay(icon, title, sub, spinner) {
@@ -1494,6 +1496,7 @@ footer { border-top: 1px solid var(--line); padding: 22px 0 28px; display: flex;
   }
 
   function stopVideo() {
+    playbackAttempt++;
     stopRAF();
     player.pause();
     if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
@@ -1508,76 +1511,100 @@ footer { border-top: 1px solid var(--line); padding: 22px 0 28px; display: flex;
     player.style.transform = ''; isMirrored = false;
   }
 
+  let playbackAttempt = 0;
+
   async function loadVideo(id) {
     load();
-    const v = videos.find(v => v.id === id);
-    if (!v) { setOverlay('⚠', 'Video not found', 'It may have been removed from this browser.', false); return; }
-    watchTitle.textContent = v.title;
-    watchDesc.textContent  = v.description || '';
-    watchDate.textContent  = new Date(v.createdAt).toLocaleDateString();
-    srcUrl.textContent     = v.url;
-    currentUrl             = v.url;
-    watchTags.innerHTML    = (v.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
-    if (v.thumbnail) player.setAttribute('poster', v.thumbnail); else player.removeAttribute('poster');
-    setOverlay('', 'Loading video…', 'Connecting to CDN', true);
-    setMethod('trying direct…', '');
-    pcQuality.innerHTML = '<option value="-1">Quality: Auto</option>';
-    playerWrap.classList.remove('buffering','ui-hidden');
-    if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+    const attempt = ++playbackAttempt;
+    const v = videos.find(item => item.id === id);
+    if (!v) {
+      setOverlay('⚠', 'Video not found', 'It may have been removed from this browser.', false);
+      return;
+    }
 
-    if (isHLS(v.url) && window.Hls && Hls.isSupported()) { tryHLS(v.url, 'HLS.js direct'); return; }
-    const directOk = await tryDirect(v.url);
-    if (directOk) return;
-    setOverlay('', 'Applying proxy…', 'CORS blocked — routing through Cloudflare Worker', true);
-    setMethod('proxy…', '');
-    if (isHLS(v.url)) { tryHLS(proxyUrl(v.url), 'HLS via proxy'); return; }
-    const proxyOk = await tryDirect(proxyUrl(v.url));
-    if (proxyOk) { setMethod('proxy', 'ok'); return; }
-    if (window.Hls && Hls.isSupported()) { tryHLS(proxyUrl(v.url), 'HLS.js via proxy'); return; }
-    setOverlay('⚠', 'Playback failed', 'CDN is blocking this video from loading in the browser.', false);
-    setMethod('failed', 'err');
+    watchTitle.textContent = v.title;
+    watchDesc.textContent = v.description || '';
+    watchDate.textContent = v.createdAt ? new Date(v.createdAt).toLocaleDateString() : '';
+    srcUrl.textContent = v.url;
+    currentUrl = v.url;
+    watchTags.innerHTML = (v.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
+    if (v.thumbnail) player.setAttribute('poster', v.thumbnail);
+    else player.removeAttribute('poster');
+
+    setOverlay('', 'Loading video…', 'Opening the original video URL', true);
+    setMethod('connecting…', '');
+    pcQuality.innerHTML = '<option value="-1">Quality: Auto</option>';
+    playerWrap.classList.remove('buffering', 'ui-hidden', 'playing');
+
+    if (hlsInstance) {
+      hlsInstance.destroy();
+      hlsInstance = null;
+    }
+
+    // Do not set crossOrigin: native video playback does not require CORS.
+    // A no-referrer request also avoids CDNs that reject foreign page referrers.
+    player.pause();
+    player.removeAttribute('src');
+    player.load();
+    player.referrerPolicy = 'no-referrer';
+
+    if (isHLS(v.url)) {
+      if (window.Hls && Hls.isSupported()) {
+        tryHLS(v.url, 'HLS.js direct');
+      } else {
+        tryHLS(v.url, 'HLS native');
+      }
+      return;
+    }
+
+    const directOk = await tryDirect(v.url, attempt);
+    if (attempt !== playbackAttempt || directOk) return;
+
+    setOverlay('', 'Trying stream relay…', 'The source did not respond to direct playback. Trying the configured relay.', true);
+    setMethod('relay…', '');
+
+    const relayOk = await tryDirect(proxyUrl(v.url), attempt);
+    if (attempt !== playbackAttempt || relayOk) return;
+
+    setOverlay(
+      '⚠',
+      'This source cannot be played here',
+      'The CDN may require a valid session, a specific Referer, or HTTP Range support. Open the original URL in a new tab to verify that it is still active.',
+      false
+    );
+    setMethod('playback failed', 'err');
   }
 
-  function tryDirect(url) {
+  function tryDirect(url, attempt) {
     return new Promise(resolve => {
       let settled = false;
       const finish = ok => {
-        if (settled) return; settled = true; clearTimeout(timer);
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        player.removeEventListener('loadedmetadata', onReady);
         player.removeEventListener('canplay', onReady);
         player.removeEventListener('error', onErr);
         resolve(ok);
       };
       const onReady = () => {
-        hideOverlay(); setMethod(url.includes(PROXY) ? 'proxy' : 'direct', 'ok');
-        player.play().catch(() => {}); finish(true);
+        if (attempt !== playbackAttempt) return finish(false);
+        hideOverlay();
+        setMethod(url.includes(PROXY) ? 'relay' : 'direct MP4', 'ok');
+        player.play().catch(() => {
+          // Playback can be blocked by autoplay policy; the visible play button remains available.
+          playerToast('Press play to start');
+        });
+        finish(true);
       };
       const onErr = () => finish(false);
-      const timer = setTimeout(() => finish(false), 12000);
-      player.addEventListener('canplay', onReady, { once: true });
-      player.addEventListener('error', onErr, { once: true });
-      player.src = url; player.load();
-    });
-  }
+      const timer = setTimeout(() => finish(false), 25000);
 
-  function tryHLS(url, label) {
-    if (!window.Hls || !Hls.isSupported()) {
-      player.src = url;
-      player.addEventListener('canplay', () => { hideOverlay(); setMethod(label, 'ok'); player.play().catch(() => {}); }, { once: true });
-      player.addEventListener('error', () => { setOverlay('⚠', 'HLS load failed', 'Check stream URL.', false); setMethod('failed', 'err'); }, { once: true });
-      player.load(); return;
-    }
-    if (hlsInstance) hlsInstance.destroy();
-    hlsInstance = new Hls({ enableWorker: true, capLevelToPlayerSize: true, startLevel: -1, maxBufferLength: 30, maxMaxBufferLength: 60 });
-    hlsInstance.loadSource(url);
-    hlsInstance.attachMedia(player);
-    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => { updateQualities(); hideOverlay(); setMethod(label, 'ok'); player.play().catch(() => {}); });
-    hlsInstance.on(Hls.Events.LEVEL_SWITCHED, (_, data) => { const l = hlsInstance.levels[data.level]; if (l && l.height) playerToast(`${l.height}p`); });
-    hlsInstance.on(Hls.Events.ERROR, (_, data) => {
-      if (data.fatal) {
-        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) hlsInstance.startLoad();
-        else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hlsInstance.recoverMediaError();
-        else { setOverlay('⚠', 'HLS stream error', data.details || 'Stream could not be parsed.', false); setMethod('failed', 'err'); }
-      }
+      player.addEventListener('loadedmetadata', onReady);
+      player.addEventListener('canplay', onReady);
+      player.addEventListener('error', onErr);
+      player.src = url; // Preserve the signed URL exactly; do not rebuild its query string.
+      player.load();
     });
   }
 
